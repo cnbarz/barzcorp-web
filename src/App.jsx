@@ -36,7 +36,7 @@ function App() {
     setStatus('Processing your order...');
 
     try {
-      const response = await axios.post('http://localhost:3000/nueva-orden', {
+      const response = await axios.post('https://barzcorp-api.onrender.com', {
         nombreCliente: "Web User",
         cantidad: cryptoAmount,
         monedaCripto: cryptoType,
