@@ -5,13 +5,17 @@ import { supabase } from './supabaseClient';
 // === SISTEMA DE TRADUCCIONES ===
 const dict = {
   en: {
-    navHome: "Home", navHow: "How it works", navAbout: "About Us", navContact: "Contact",
+    navHome: "Home", navHow: "How it works", navAbout: "About Us", navContact: "Contact", navFaq: "FAQ",
     btnSignIn: "Sign In", btnSignUp: "Sign Up", btnLogout: "Logout",
     heroTitle1: "Exchange Crypto ", heroTitle2: "easily and securely",
     heroSub: "Barzcorp offers fiat on-ramp and off-ramp services for private individuals and entities across the SEPA zone.",
     adv1: "✅ No hidden fees", adv2: "✅ SEPA Transfers",
-    loginTitle: "Access your account", loginSub: "To continue operating, log in or create an account.",
-    email: "Email address", pass: "Password", btnEnter: "Enter", btnRegister: "Register", backCalc: "← Back to calculator",
+    loginTitle: "Welcome Back", loginSub: "Log in to your account to continue.",
+    regTitle: "Create Account", regSub: "Join us to start exchanging securely.",
+    firstName: "First Name", lastName: "Last Name", currencyLabel: "Preferred Currency",
+    email: "Email address", pass: "Password", btnEnter: "Login", btnRegister: "Create Account", backCalc: "← Back to calculator",
+    toggleToReg: "Don't have an account? Sign Up", toggleToLog: "Already have an account? Sign In",
+    fillAll: "Please fill all fields.", checkEmail: "Please check your email to verify your account.",
     tabBuy: "Buy", tabSell: "Sell",
     youSend: "You send", youGet: "You get",
     walletBuy: "Your destination wallet address:", walletSell: "Your IBAN to receive EUR:",
@@ -32,16 +36,21 @@ const dict = {
     step2: "Transfer funds", step2Sub: "Send funds securely via SEPA.",
     step3: "Receive Crypto", step3Sub: "Get your assets directly to your wallet.",
     contactTitle: "Contact Support", name: "Your Name", msg: "Your Message", btnSend: "Send Message",
+    faqTitle: "Frequently Asked Questions",
     footerRight: "Netherlands.",
   },
   es: {
-    navHome: "Inicio", navHow: "Cómo funciona", navAbout: "Sobre Nosotros", navContact: "Contacto",
+    navHome: "Inicio", navHow: "Cómo funciona", navAbout: "Sobre Nosotros", navContact: "Contacto", navFaq: "FAQ",
     btnSignIn: "Iniciar sesión", btnSignUp: "Registrarse", btnLogout: "Salir",
     heroTitle1: "Intercambia Cripto de forma ", heroTitle2: "fácil y segura",
     heroSub: "Barzcorp ofrece servicios de entrada y salida de fiat (fiat-cripto-fiat) para particulares y empresas en toda la zona SEPA.",
     adv1: "✅ Sin comisiones ocultas", adv2: "✅ Transferencias SEPA",
-    loginTitle: "Accede a tu cuenta", loginSub: "Para continuar operando, inicia sesión o crea una cuenta.",
-    email: "Tu correo electrónico", pass: "Tu contraseña", btnEnter: "Entrar", btnRegister: "Registro", backCalc: "← Volver a la calculadora",
+    loginTitle: "Bienvenido de nuevo", loginSub: "Inicia sesión en tu cuenta para continuar.",
+    regTitle: "Crea tu Cuenta", regSub: "Únete para operar de forma segura.",
+    firstName: "Nombre", lastName: "Apellido", currencyLabel: "Moneda",
+    email: "Tu correo electrónico", pass: "Tu contraseña", btnEnter: "Entrar", btnRegister: "Crear Cuenta", backCalc: "← Volver a la calculadora",
+    toggleToReg: "¿No tienes cuenta? Regístrate", toggleToLog: "¿Ya tienes cuenta? Inicia Sesión",
+    fillAll: "Por favor llena todos los campos.", checkEmail: "Revisa tu correo para verificar la cuenta.",
     tabBuy: "Comprar", tabSell: "Vender",
     youSend: "Tú envías", youGet: "Tú recibes",
     walletBuy: "Tu dirección de Wallet destino:", walletSell: "Tu cuenta IBAN para recibir EUR:",
@@ -62,8 +71,22 @@ const dict = {
     step2: "Haz tu transferencia", step2Sub: "Envía los fondos mediante transferencia SEPA.",
     step3: "Recibe tus Criptos", step3Sub: "Los activos llegarán a tu wallet personal.",
     contactTitle: "Contactar Soporte", name: "Tu Nombre", msg: "Tu Mensaje", btnSend: "Enviar Mensaje",
+    faqTitle: "Preguntas Frecuentes",
     footerRight: "Países Bajos.",
   }
+};
+
+const faqs = {
+  en: [
+    { q: "How long does the verification (KYC) take?", a: "Our automated system verifies your documents in less than 5 minutes." },
+    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier, starting at 3.0% and dropping to 1.5% for larger amounts. Network fees are included." },
+    { q: "How fast will I receive my crypto/fiat?", a: "Once your SEPA transfer arrives, crypto is dispatched immediately. If you sell crypto, EUR is sent the same business day." }
+  ],
+  es: [
+    { q: "¿Cuánto tarda la verificación (KYC)?", a: "Nuestro sistema automatizado verifica tus documentos en menos de 5 minutos." },
+    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente basada en tu volumen, comenzando en 3.0% y bajando al 1.5% para montos mayores. Las tarifas de red están incluidas." },
+    { q: "¿Qué tan rápido recibiré mi dinero/cripto?", a: "Una vez que llega tu transferencia SEPA, enviamos la cripto de inmediato. Si vendes cripto, los euros se envían el mismo día hábil." }
+  ]
 };
 
 const BarzcorpLogo = () => (
@@ -78,13 +101,30 @@ function App() {
   const [lang, setLang] = useState('en');
   const t = dict[lang];
 
+  // Motor de Parallax (Efecto Cristal y Curvas)
+  const [scrollY, setScrollY] = useState(0);
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   const [view, setView] = useState('home');
   const [session, setSession] = useState(null);
+  
+  // Auth States
   const [mostrarLogin, setMostrarLogin] = useState(false);
+  const [isSignUpView, setIsSignUpView] = useState(false);
   const [authMsg, setAuthMsg] = useState('');
+  
+  // Form Data
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [currency, setCurrency] = useState('EUR');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Exchange States
   const [isBuying, setIsBuying] = useState(true);
   const [sendAmount, setSendAmount] = useState(100);
   const [cryptoType, setCryptoType] = useState('USDT');
@@ -117,46 +157,31 @@ function App() {
     obtenerPrecioMercado();
   }, [cryptoType]);
 
-  // === MOTOR DE COMISIONES ESCALONADAS ===
   const calcularTasas = (montoIngresado, isBuyingAction) => {
-    // Calculamos el valor base en Euros para definir el escalón
     const valorEnEuros = isBuyingAction ? Number(montoIngresado) : Number(montoIngresado) * precioReal;
-    
-    let margen = 1.03; // 3% por defecto
+    let margen = 1.03; 
     let porcentajeMostrar = "3.0%";
 
-    if (valorEnEuros >= 1500) {
-      margen = 1.015; // 1.5% VIP
-      porcentajeMostrar = "1.5%";
-    } else if (valorEnEuros >= 500) {
-      margen = 1.02; // 2.0% Pro
-      porcentajeMostrar = "2.0%";
-    }
+    if (valorEnEuros >= 1500) { margen = 1.015; porcentajeMostrar = "1.5%"; } 
+    else if (valorEnEuros >= 500) { margen = 1.02; porcentajeMostrar = "2.0%"; }
 
     const tasaCompra = precioReal * margen;
     const tasaVenta = precioReal * (2 - margen);
-
     return { tasaCompra, tasaVenta, porcentajeMostrar };
   };
 
   const { tasaCompra, tasaVenta, porcentajeMostrar } = calcularTasas(sendAmount, isBuying);
-
-  const receiveAmount = isBuying 
-    ? (tasaCompra > 0 ? (sendAmount / tasaCompra).toFixed(2) : 0) 
-    : (tasaVenta > 0 ? (sendAmount * tasaVenta).toFixed(2) : 0);
+  const receiveAmount = isBuying ? (tasaCompra > 0 ? (sendAmount / tasaCompra).toFixed(2) : 0) : (tasaVenta > 0 ? (sendAmount * tasaVenta).toFixed(2) : 0);
 
   const handleTransaction = async (e) => {
     e.preventDefault();
-    if (!session) {
-      setMostrarLogin(true);
-      return;
-    }
+    if (!session) { setMostrarLogin(true); return; }
     setStatus(t.processing);
     const refUnica = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
       const response = await axios.post('https://barzcorp-api.onrender.com/nueva-orden', {
-        nombreCliente: `${session.user.email} (Ref: #${refUnica}) - TIPO: ${isBuying ? 'COMPRA' : 'VENTA'}`,
+        nombreCliente: `${session.user.user_metadata?.first_name || session.user.email} (Ref: #${refUnica}) - TIPO: ${isBuying ? 'COMPRA' : 'VENTA'}`,
         cantidad: isBuying ? receiveAmount : sendAmount,
         monedaCripto: cryptoType,
         montoFiat: isBuying ? sendAmount : receiveAmount,
@@ -172,22 +197,26 @@ function App() {
     }
   };
 
-  const handleAuth = async (action, e) => {
+  const handleAuth = async (e) => {
     e.preventDefault();
     setAuthMsg(t.processing);
-    const { error } = action === 'signup' 
-      ? await supabase.auth.signUp({ email, password })
-      : await supabase.auth.signInWithPassword({ email, password });
-    
-    if (error) setAuthMsg(`❌ ${error.message}`);
-    else setAuthMsg(action === 'signup' ? '✅ Check email' : '');
-  };
 
-  const selectBlock = (amount) => {
-    setSendAmount(amount);
-    setIsBuying(true);
-    setCryptoType('USDT');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (isSignUpView) {
+      if (!firstName || !lastName || !email || !password) {
+        setAuthMsg(`❌ ${t.fillAll}`);
+        return;
+      }
+      const { error } = await supabase.auth.signUp({
+        email, password,
+        options: { data: { first_name: firstName, last_name: lastName, currency: currency } }
+      });
+      if (error) setAuthMsg(`❌ ${error.message}`);
+      else setAuthMsg(`✅ ${t.checkEmail}`);
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) setAuthMsg(`❌ ${error.message}`);
+      else { setAuthMsg(''); setMostrarLogin(false); }
+    }
   };
 
   const cryptoLogos = {
@@ -195,24 +224,40 @@ function App() {
     USDC: "https://assets.coingecko.com/coins/images/6319/standard/usdc.png"
   };
 
+  // Obtener nombre del usuario si está logueado
+  const userName = session?.user?.user_metadata?.first_name 
+    ? `${session.user.user_metadata.first_name} ${session.user.user_metadata.last_name || ''}`
+    : session?.user?.email;
+
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#111827', color: '#f3f4f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
       
-      {/* EFECTOS CRISTALINOS */}
-      <div style={{ position: 'absolute', top: '-150px', right: '-100px', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(17,24,39,0) 60%)', borderRadius: '50%', filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }}></div>
-      <div style={{ position: 'absolute', bottom: '20%', left: '-150px', width: '500px', height: '500px', background: 'radial-gradient(circle, rgba(16,185,129,0.1) 0%, rgba(17,24,39,0) 60%)', borderRadius: '50%', filter: 'blur(60px)', zIndex: 0, pointerEvents: 'none' }}></div>
+      {/* FONDO EFECTO CRISTAL Y CURVAS CON PARALLAX */}
+      <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', top: 0, left: 0, overflow: 'hidden' }}>
+        {/* Luces Aurora */}
+        <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * 0.15}px)` }} />
+        <div style={{ position: 'absolute', bottom: '10%', left: '-20%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * -0.1}px)` }} />
+        
+        {/* Curvas SVG Cristalinas (Parallax) */}
+        <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '20%', width: '100%', transform: `translateY(${scrollY * -0.25}px)`, opacity: 0.05, transition: 'transform 0.1s ease-out' }}>
+          <path fill="#10b981" d="M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,112C672,117,768,171,864,197.3C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+        <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '50%', width: '100%', transform: `translateY(${scrollY * -0.4}px)`, opacity: 0.03, transition: 'transform 0.1s ease-out' }}>
+          <path fill="#ffffff" d="M0,224L60,213.3C120,203,240,181,360,176C480,171,600,181,720,197.3C840,213,960,235,1080,218.7C1200,203,1320,149,1380,122.7L1440,96L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+        </svg>
+      </div>
 
-      {/* HEADER */}
-      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 5%', backgroundColor: 'rgba(31, 41, 55, 0.8)', backdropFilter: 'blur(10px)', borderBottom: '1px solid #374151', position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* HEADER NAVBAR */}
+      <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 5%', backgroundColor: 'rgba(17, 24, 39, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div onClick={() => setView('home')} style={{ display: 'flex', alignItems: 'center', fontSize: '24px', fontWeight: '900', color: '#ffffff', letterSpacing: '-1px', cursor: 'pointer' }}>
-          <BarzcorpLogo />
-          BARZCORP
+          <BarzcorpLogo /> BARZCORP
         </div>
         
-        <div style={{ display: 'flex', gap: '20px', fontWeight: '500', color: '#9ca3af' }}>
-          <span onClick={() => setView('home')} style={{cursor: 'pointer', color: view==='home'?'#10b981':'inherit'}}>{t.navHome}</span>
-          <span onClick={() => setView('about')} style={{cursor: 'pointer', color: view==='about'?'#10b981':'inherit'}}>{t.navAbout}</span>
-          <span onClick={() => setView('contact')} style={{cursor: 'pointer', color: view==='contact'?'#10b981':'inherit'}}>{t.navContact}</span>
+        <div style={{ display: 'flex', gap: '25px', fontWeight: '500', color: '#9ca3af' }}>
+          <span onClick={() => setView('home')} style={{cursor: 'pointer', color: view==='home'?'#10b981':'inherit', transition: '0.2s'}}>{t.navHome}</span>
+          <span onClick={() => setView('about')} style={{cursor: 'pointer', color: view==='about'?'#10b981':'inherit', transition: '0.2s'}}>{t.navAbout}</span>
+          <span onClick={() => setView('faq')} style={{cursor: 'pointer', color: view==='faq'?'#10b981':'inherit', transition: '0.2s'}}>{t.navFaq}</span>
+          <span onClick={() => setView('contact')} style={{cursor: 'pointer', color: view==='contact'?'#10b981':'inherit', transition: '0.2s'}}>{t.navContact}</span>
         </div>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -221,30 +266,52 @@ function App() {
           </button>
           
           {session ? (
-            <button onClick={() => supabase.auth.signOut()} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnLogout}</button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <span style={{ fontSize: '14px', fontWeight: '600', color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{width: '8px', height: '8px', backgroundColor: '#10b981', borderRadius: '50%', display: 'inline-block'}}></span>
+                {userName}
+              </span>
+              <button onClick={() => supabase.auth.signOut()} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnLogout}</button>
+            </div>
           ) : (
-            <button onClick={() => {setView('home'); setMostrarLogin(true)}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnSignIn}</button>
+            <button onClick={() => {setView('home'); setIsSignUpView(false); setMostrarLogin(true);}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(16,185,129,0.2)' }}>{t.btnSignIn}</button>
           )}
         </div>
       </nav>
 
-      {/* VISTAS DINÁMICAS */}
+      {/* CONTENIDO PRINCIPAL (Con z-index para estar sobre el parallax) */}
       <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
         
+        {/* VISTA: FAQ */}
+        {view === 'faq' && (
+          <div style={{ padding: '80px 5%', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+            <h1 style={{ fontSize: '40px', fontWeight: '900', marginBottom: '40px', color: '#ffffff', textAlign: 'center' }}>{t.faqTitle}</h1>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+              {faqs[lang].map((faq, index) => (
+                <div key={index} style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '25px', borderRadius: '16px' }}>
+                  <h3 style={{ color: '#10b981', fontSize: '18px', marginBottom: '10px' }}>Q: {faq.q}</h3>
+                  <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>A: {faq.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* VISTA: ABOUT US */}
         {view === 'about' && (
           <div style={{ animation: 'fadeIn 0.4s', padding: '80px 5%', maxWidth: '900px', margin: '0 auto' }}>
             <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '20px', color: '#ffffff', textAlign: 'center' }}>{t.aboutTitle}</h1>
             <p style={{ fontSize: '18px', color: '#9ca3af', lineHeight: '1.7', marginBottom: '50px', textAlign: 'center' }}>{t.aboutIntro}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
                 <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutP2pTitle}</h3>
                 <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutP2p}</p>
               </div>
-              <div style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
                 <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutRetailTitle}</h3>
                 <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutRetail}</p>
               </div>
-              <div style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
                 <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutOtcTitle}</h3>
                 <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutOtc}</p>
               </div>
@@ -252,57 +319,85 @@ function App() {
           </div>
         )}
 
+        {/* VISTA: CONTACTO */}
         {view === 'contact' && (
           <div style={{ padding: '80px 5%', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
             <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '30px', textAlign: 'center', color: '#ffffff' }}>{t.contactTitle}</h1>
             <form onSubmit={(e) => { e.preventDefault(); alert(lang==='en'?'Message sent!':'¡Mensaje enviado!'); }}>
-              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#1f2937', color: '#ffffff' }} required />
-              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#1f2937', color: '#ffffff' }} required />
-              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#1f2937', color: '#ffffff' }} required></textarea>
+              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
+              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
+              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required></textarea>
               <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t.btnSend}</button>
             </form>
           </div>
         )}
 
+        {/* VISTA: INICIO */}
         {view === 'home' && (
           <>
             <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', padding: '60px 5%', gap: '40px' }}>
               <div style={{ flex: '1 1 400px', maxWidth: '600px' }}>
-                <h1 style={{ fontSize: '56px', fontWeight: '900', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-1px', color: '#ffffff' }}>
+                <h1 style={{ fontSize: '64px', fontWeight: '900', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-1px', color: '#ffffff' }}>
                   {t.heroTitle1} <br/><span style={{color: '#10b981'}}>{t.heroTitle2}</span>
                 </h1>
-                <p style={{ fontSize: '18px', color: '#9ca3af', lineHeight: '1.6', marginBottom: '30px' }}>{t.heroSub}</p>
-                <div style={{ display: 'flex', gap: '15px' }}>
-                   <span style={{ fontSize: '14px', color: '#d1d5db' }}>{t.adv1}</span>
-                   <span style={{ fontSize: '14px', color: '#d1d5db' }}>{t.adv2}</span>
+                <p style={{ fontSize: '20px', color: '#9ca3af', lineHeight: '1.6', marginBottom: '30px' }}>{t.heroSub}</p>
+                <div style={{ display: 'flex', gap: '20px' }}>
+                   <span style={{ fontSize: '15px', color: '#d1d5db', backgroundColor: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px' }}>{t.adv1}</span>
+                   <span style={{ fontSize: '15px', color: '#d1d5db', backgroundColor: 'rgba(255,255,255,0.05)', padding: '8px 16px', borderRadius: '20px' }}>{t.adv2}</span>
                 </div>
               </div>
 
-              {/* CALCULADORA */}
+              {/* CALCULADORA / FORMULARIO */}
               <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
-                <div style={{ backgroundColor: '#1f2937', padding: '40px', borderRadius: '24px', border: '1px solid #374151', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', width: '100%', maxWidth: '420px' }}>
+                <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(20px)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', width: '100%', maxWidth: '420px' }}>
                   
                   {mostrarLogin && !session ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
-                      <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '10px', color: '#ffffff' }}>{t.loginTitle}</h3>
-                      <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{t.loginSub}</p>
-                      <form>
-                        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '10px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                        <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '20px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                        <div style={{ display: 'flex', gap: '10px' }}>
-                          <button onClick={(e) => handleAuth('signin', e)} style={{ flex: 1, padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnEnter}</button>
-                          <button onClick={(e) => handleAuth('signup', e)} style={{ flex: 1, padding: '14px', backgroundColor: '#374151', color: '#ffffff', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnRegister}</button>
-                        </div>
-                        <button onClick={() => setMostrarLogin(false)} style={{ width: '100%', padding: '10px', marginTop: '15px', backgroundColor: 'transparent', color: '#9ca3af', border: 'none', cursor: 'pointer' }}>{t.backCalc}</button>
+                      <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{isSignUpView ? t.regTitle : t.loginTitle}</h3>
+                      <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{isSignUpView ? t.regSub : t.loginSub}</p>
+                      
+                      <form onSubmit={handleAuth}>
+                        {isSignUpView && (
+                          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                            <input type="text" placeholder={t.firstName} value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                            <input type="text" placeholder={t.lastName} value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                          </div>
+                        )}
+                        
+                        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                        <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                        
+                        {isSignUpView && (
+                          <div style={{ marginBottom: '20px' }}>
+                            <label style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px', display: 'block' }}>{t.currencyLabel}</label>
+                            <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', outline: 'none' }}>
+                              <option value="EUR">EUR (€)</option>
+                              <option value="USD">USD ($)</option>
+                            </select>
+                          </div>
+                        )}
+
+                        <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
+                          {isSignUpView ? t.btnRegister : t.btnEnter}
+                        </button>
                       </form>
+                      
+                      <div style={{ textAlign: 'center' }}>
+                        <button onClick={() => setIsSignUpView(!isSignUpView)} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginBottom: '15px' }}>
+                          {isSignUpView ? t.toggleToLog : t.toggleToReg}
+                        </button>
+                        <br/>
+                        <button onClick={() => setMostrarLogin(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>{t.backCalc}</button>
+                      </div>
+
                       {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? '#ef4444' : '#10b981' }}>{authMsg}</p>}
                     </div>
                   ) : !ordenCreada ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                         <div style={{ backgroundColor: '#111827', padding: '5px', borderRadius: '20px', display: 'flex', gap: '5px' }}>
-                           <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: isBuying ? '#ffffff' : '#9ca3af' }}>{t.tabBuy}</div>
-                           <div onClick={() => setIsBuying(false)} style={{ padding: '8px 20px', backgroundColor: !isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: !isBuying ? '#ffffff' : '#9ca3af' }}>{t.tabSell}</div>
+                           <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: isBuying ? '#ffffff' : '#9ca3af', transition: '0.2s' }}>{t.tabBuy}</div>
+                           <div onClick={() => setIsBuying(false)} style={{ padding: '8px 20px', backgroundColor: !isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: !isBuying ? '#ffffff' : '#9ca3af', transition: '0.2s' }}>{t.tabSell}</div>
                         </div>
                       </div>
 
@@ -323,8 +418,6 @@ function App() {
                                </div>
                             )}
                           </div>
-                          
-                          {/* INDICADOR DE COMISIÓN */}
                           <div style={{ position: 'absolute', top: '15px', right: '15px', fontSize: '11px', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(16,185,129,0.1)' }}>
                             {t.feeLabel} {porcentajeMostrar}
                           </div>
@@ -357,7 +450,7 @@ function App() {
                           <input type="text" value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', boxSizing: 'border-box' }} required />
                         </div>
 
-                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting')} style={{ width: '100%', padding: '18px', backgroundColor: cargandoPrecio ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: cargandoPrecio ? 'not-allowed' : 'pointer' }}>
+                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting')} style={{ width: '100%', padding: '18px', backgroundColor: cargandoPrecio ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: cargandoPrecio ? 'not-allowed' : 'pointer', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.3)' }}>
                           {status ? status : (isBuying ? `${t.btnBuy} ${cryptoType}` : `${t.btnSell} ${cryptoType}`)}
                         </button>
                       </form>
@@ -395,7 +488,7 @@ function App() {
               </div>
             </header>
 
-            {/* SECCIÓN: BUY BLOCKS CON CÁLCULO DINÁMICO */}
+            {/* SECCIÓN: BUY BLOCKS */}
             <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
                <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px' }}>{t.buyBlocksTitle}</h2>
                <p style={{ color: '#9ca3af', marginBottom: '40px' }}>{t.buyBlocksSub}</p>
@@ -404,59 +497,27 @@ function App() {
                   {blockAmounts.map((amount, index) => {
                     const blockRates = calcularTasas(amount, true);
                     return (
-                      <div key={index} style={{ backgroundColor: '#1f2937', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative' }}>
-                         
-                         {/* Etiqueta VIP en bloques altos */}
+                      <div key={index} onClick={() => selectBlock(amount)} style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s', ':hover': {transform: 'translateY(-5px)'} }}>
                          {amount >= 500 && (
                            <div style={{ position: 'absolute', top: '15px', right: '15px', backgroundColor: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', border: '1px solid rgba(16,185,129,0.5)' }}>
                              MEJOR TASA
                            </div>
                          )}
-
-                         <div style={{ backgroundColor: '#10b981', color: '#064e3b', width: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '20px' }}>
-                           {index + 1}
-                         </div>
+                         <div style={{ backgroundColor: '#10b981', color: '#064e3b', width: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '20px' }}>{index + 1}</div>
                          <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '5px' }}>{t.pay}</p>
                          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', marginBottom: '20px' }}>{amount} <span style={{fontSize:'16px', color:'#9ca3af'}}>EUR</span></p>
-                         
                          <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '5px' }}>{t.get}</p>
                          <p style={{ fontSize: '20px', fontWeight: 'bold', color: '#10b981', marginBottom: '30px' }}>{(amount / blockRates.tasaCompra).toFixed(2)} <span style={{fontSize:'14px'}}>USDT</span></p>
-                         
-                         <button onClick={() => selectBlock(amount)} style={{ width: '100%', padding: '12px', backgroundColor: '#374151', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', transition: '0.2s' }}>
-                           {t.buyNow}
-                         </button>
+                         <button style={{ width: '100%', padding: '12px', backgroundColor: '#374151', color: '#ffffff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.buyNow}</button>
                       </div>
                     );
                   })}
                </div>
             </section>
-
-            {/* SECCIÓN: CÓMO FUNCIONA */}
-            <section style={{ padding: '80px 5%', textAlign: 'center' }}>
-              <h2 style={{ fontSize: '36px', fontWeight: '900', color: '#ffffff', marginBottom: '50px' }}>{t.howTitle}</h2>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', justifyContent: 'center' }}>
-                <div style={{ flex: '1 1 250px', maxWidth: '300px', backgroundColor: '#1f2937', padding: '30px', borderRadius: '16px', border: '1px solid #374151' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '15px' }}>👤</div>
-                  <h3 style={{ fontSize: '20px', color: '#ffffff', marginBottom: '10px' }}>{t.step1}</h3>
-                  <p style={{ color: '#9ca3af' }}>{t.step1Sub}</p>
-                </div>
-                <div style={{ flex: '1 1 250px', maxWidth: '300px', backgroundColor: '#1f2937', padding: '30px', borderRadius: '16px', border: '1px solid #374151' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '15px' }}>🏦</div>
-                  <h3 style={{ fontSize: '20px', color: '#ffffff', marginBottom: '10px' }}>{t.step2}</h3>
-                  <p style={{ color: '#9ca3af' }}>{t.step2Sub}</p>
-                </div>
-                <div style={{ flex: '1 1 250px', maxWidth: '300px', backgroundColor: '#1f2937', padding: '30px', borderRadius: '16px', border: '1px solid #374151' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '15px' }}>💎</div>
-                  <h3 style={{ fontSize: '20px', color: '#ffffff', marginBottom: '10px' }}>{t.step3}</h3>
-                  <p style={{ color: '#9ca3af' }}>{t.step3Sub}</p>
-                </div>
-              </div>
-            </section>
           </>
         )}
       </div>
 
-      {/* FOOTER */}
       <footer style={{ backgroundColor: '#111827', color: '#6b7280', padding: '40px 5%', textAlign: 'center', fontSize: '14px', borderTop: '1px solid #1f2937', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>
           <BarzcorpLogo /> BARZCORP
