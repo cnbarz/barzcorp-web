@@ -17,17 +17,20 @@ const dict = {
     walletBuy: "Your destination wallet address:", walletSell: "Your IBAN to receive EUR:",
     btnBuy: "Buy", btnSell: "Sell",
     connecting: "Connecting...", processing: "Processing...",
-    successBuy: "✅ Order Placed Successfully",
-    successBuyText: "To receive your Crypto, transfer exactly",
-    successSell: "✅ Sell Order Generated",
-    successSellText: "To receive your EUR, please send exactly",
-    bank: "Bank:", beneficiary: "Beneficiary:", ref: "Reference:",
-    btnNewOp: "New Operation",
+    successBuy: "✅ Order Placed Successfully", successBuyText: "To receive your Crypto, transfer exactly",
+    successSell: "✅ Sell Order Generated", successSellText: "To receive your EUR, please send exactly",
+    bank: "Bank:", beneficiary: "Beneficiary:", ref: "Reference:", btnNewOp: "New Operation",
     howTitle: "Three simple steps",
     step1: "Create account", step1Sub: "Register and verify your identity.",
     step2: "Transfer funds", step2Sub: "Send funds securely via SEPA.",
     step3: "Receive Crypto", step3Sub: "Get your assets directly to your wallet.",
-    aboutTitle: "About Barzcorp", aboutText: "We are a digital asset exchange platform based in the Netherlands. Our mission is to provide a secure, fast, and compliant bridge between traditional finance and the crypto ecosystem.",
+    // ABOUT US EXTENDIDO
+    aboutHero: "Building the future of digital exchange",
+    aboutMissionTitle: "Our Mission", aboutMissionText: "To provide a secure, fast, and compliant bridge between traditional finance and the crypto ecosystem for users across Europe.",
+    aboutVisionTitle: "Our Vision", aboutVisionText: "We envision a world where moving value is as simple as sending a message, without compromising on security or regulatory compliance.",
+    value1Title: "Regulatory Compliance", value1Text: "We operate under strict AML guidelines to ensure your funds are always safe.",
+    value2Title: "Absolute Transparency", value2Text: "No hidden fees, no surprises. The rate you see is exactly what you get.",
+    value3Title: "Lightning Fast", value3Text: "Automated processing and SEPA integration for immediate liquidity.",
     contactTitle: "Contact Support", name: "Your Name", msg: "Your Message", btnSend: "Send Message",
     footerRight: "Netherlands.",
   },
@@ -44,35 +47,46 @@ const dict = {
     walletBuy: "Tu dirección de Wallet destino:", walletSell: "Tu cuenta IBAN para recibir EUR:",
     btnBuy: "Comprar", btnSell: "Vender",
     connecting: "Conectando...", processing: "Procesando...",
-    successBuy: "✅ Orden Generada con Éxito",
-    successBuyText: "Para recibir tus Criptos, transfiere exactamente",
-    successSell: "✅ Orden de Venta Generada",
-    successSellText: "Para recibir tus Euros, envía exactamente",
-    bank: "Banco:", beneficiary: "Beneficiario:", ref: "Concepto:",
-    btnNewOp: "Nueva Operación",
+    successBuy: "✅ Orden Generada con Éxito", successBuyText: "Para recibir tus Criptos, transfiere exactamente",
+    successSell: "✅ Orden de Venta Generada", successSellText: "Para recibir tus Euros, envía exactamente",
+    bank: "Banco:", beneficiary: "Beneficiario:", ref: "Concepto:", btnNewOp: "Nueva Operación",
     howTitle: "Tres simples pasos",
     step1: "Crea tu cuenta", step1Sub: "Regístrate y verifica tu identidad.",
     step2: "Haz tu transferencia", step2Sub: "Envía los fondos mediante transferencia SEPA.",
     step3: "Recibe tus Criptos", step3Sub: "Los activos llegarán a tu wallet personal.",
-    aboutTitle: "Sobre Barzcorp", aboutText: "Somos una plataforma de intercambio de activos digitales con sede en los Países Bajos. Nuestra misión es ofrecer un puente seguro, rápido y regulado entre las finanzas tradicionales y el ecosistema cripto.",
+    // ABOUT US EXTENDIDO
+    aboutHero: "Construyendo el futuro del intercambio digital",
+    aboutMissionTitle: "Nuestra Misión", aboutMissionText: "Proporcionar un puente seguro, rápido y regulado entre las finanzas tradicionales y el ecosistema cripto para usuarios en toda Europa.",
+    aboutVisionTitle: "Nuestra Visión", aboutVisionText: "Imaginamos un mundo donde mover valor sea tan simple como enviar un mensaje, sin comprometer la seguridad ni el cumplimiento normativo.",
+    value1Title: "Cumplimiento Normativo", value1Text: "Operamos bajo estrictas directrices AML para garantizar que tus fondos estén siempre seguros.",
+    value2Title: "Transparencia Absoluta", value2Text: "Sin comisiones ocultas, sin sorpresas. La tasa que ves es exactamente la que obtienes.",
+    value3Title: "Velocidad Extrema", value3Text: "Procesamiento automatizado e integración SEPA para liquidez inmediata.",
     contactTitle: "Contactar Soporte", name: "Tu Nombre", msg: "Tu Mensaje", btnSend: "Enviar Mensaje",
     footerRight: "Países Bajos.",
   }
 };
 
+// SVG LOGO COMPONENT
+const BarzcorpLogo = () => (
+  <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '10px' }}>
+    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+    <polyline points="2 17 12 22 22 17"></polyline>
+    <polyline points="2 12 12 17 22 12"></polyline>
+  </svg>
+);
+
 function App() {
   const [lang, setLang] = useState('en');
   const t = dict[lang];
 
-  const [view, setView] = useState('home'); // 'home', 'about', 'contact'
+  const [view, setView] = useState('home');
   const [session, setSession] = useState(null);
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [authMsg, setAuthMsg] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Estados del Exchange
-  const [isBuying, setIsBuying] = useState(true); // true = Buy, false = Sell
+  const [isBuying, setIsBuying] = useState(true);
   const [sendAmount, setSendAmount] = useState(100);
   const [cryptoType, setCryptoType] = useState('USDT');
   const [wallet, setWallet] = useState('');
@@ -82,11 +96,10 @@ function App() {
   const [ordenCreada, setOrdenCreada] = useState(false);
   const [numeroReferencia, setNumeroReferencia] = useState('');
 
-  // Margen: 3% ganancia en ambos sentidos
-  const tasaCompra = precioReal * 1.03; // El cliente paga más caro
-  const tasaVenta = precioReal * 0.97;  // El cliente recibe menos
+  const margenGanancia = 1.03;
+  const tasaCompra = precioReal * margenGanancia;
+  const tasaVenta = precioReal * (1 - (margenGanancia - 1));
 
-  // Cálculo dinámico
   const receiveAmount = isBuying 
     ? (tasaCompra > 0 ? (sendAmount / tasaCompra).toFixed(2) : 0) 
     : (tasaVenta > 0 ? (sendAmount * tasaVenta).toFixed(2) : 0);
@@ -149,9 +162,10 @@ function App() {
     else setAuthMsg(action === 'signup' ? '✅ Revisa tu correo' : '');
   };
 
+  // Logos de alta fiabilidad desde CoinGecko
   const cryptoLogos = {
-    USDT: "https://cryptologos.cc/logos/tether-usdt-logo.svg?v=024",
-    USDC: "https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=024"
+    USDT: "https://assets.coingecko.com/coins/images/325/standard/Tether.png",
+    USDC: "https://assets.coingecko.com/coins/images/6319/standard/usdc.png"
   };
 
   return (
@@ -159,8 +173,9 @@ function App() {
       
       {/* HEADER */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 5%', backgroundColor: '#ffffff', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', position: 'sticky', top: 0, zIndex: 100 }}>
-        <div onClick={() => setView('home')} style={{ fontSize: '24px', fontWeight: '900', color: '#1e293b', letterSpacing: '-1px', cursor: 'pointer' }}>
-          BARZCORP <span style={{color: '#2563eb'}}>EXCHANGE</span>
+        <div onClick={() => setView('home')} style={{ display: 'flex', alignItems: 'center', fontSize: '24px', fontWeight: '900', color: '#1e293b', letterSpacing: '-1px', cursor: 'pointer' }}>
+          <BarzcorpLogo />
+          BARZCORP <span style={{color: '#2563eb', marginLeft: '5px'}}>EXCHANGE</span>
         </div>
         
         <div style={{ display: 'flex', gap: '20px', fontWeight: '500', color: '#475569' }}>
@@ -170,7 +185,8 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-          <button onClick={() => setLang(lang === 'en' ? 'es' : 'en')} style={{ padding: '6px 12px', borderRadius: '20px', border: '1px solid #cbd5e1', backgroundColor: '#f1f5f9', cursor: 'pointer', fontWeight: 'bold' }}>
+          {/* Botón de idioma corregido para visibilidad */}
+          <button onClick={() => setLang(lang === 'en' ? 'es' : 'en')} style={{ padding: '8px 12px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a', cursor: 'pointer', fontWeight: 'bold' }}>
             {lang === 'en' ? '🇪🇸 ES' : '🇬🇧 EN'}
           </button>
           
@@ -184,31 +200,67 @@ function App() {
 
       {/* VISTAS DINÁMICAS */}
       <div style={{ flex: 1 }}>
+        
+        {/* VISTA: ABOUT US */}
         {view === 'about' && (
-          <div style={{ padding: '80px 5%', maxWidth: '800px', margin: '0 auto', textAlign: 'center', animation: 'fadeIn 0.3s' }}>
-            <h1 style={{ fontSize: '40px', fontWeight: '900', marginBottom: '20px', color: '#0f172a' }}>{t.aboutTitle}</h1>
-            <p style={{ fontSize: '18px', color: '#475569', lineHeight: '1.8' }}>{t.aboutText}</p>
+          <div style={{ animation: 'fadeIn 0.4s' }}>
+            {/* Hero About */}
+            <div style={{ backgroundColor: '#1e293b', color: 'white', padding: '80px 5%', textAlign: 'center' }}>
+              <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '20px' }}>{t.aboutTitle}</h1>
+              <p style={{ fontSize: '20px', color: '#94a3b8', maxWidth: '700px', margin: '0 auto', lineHeight: '1.6' }}>{t.aboutHero}</p>
+            </div>
+            
+            {/* Mision / Vision */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', padding: '80px 5%', maxWidth: '1000px', margin: '0 auto' }}>
+              <div style={{ flex: '1 1 300px', backgroundColor: '#ffffff', padding: '40px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '32px', marginBottom: '15px' }}>🎯</div>
+                <h2 style={{ color: '#0f172a', fontSize: '24px', marginBottom: '15px' }}>{t.aboutMissionTitle}</h2>
+                <p style={{ color: '#475569', lineHeight: '1.7' }}>{t.aboutMissionText}</p>
+              </div>
+              <div style={{ flex: '1 1 300px', backgroundColor: '#ffffff', padding: '40px', borderRadius: '24px', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
+                <div style={{ fontSize: '32px', marginBottom: '15px' }}>👁️</div>
+                <h2 style={{ color: '#0f172a', fontSize: '24px', marginBottom: '15px' }}>{t.aboutVisionTitle}</h2>
+                <p style={{ color: '#475569', lineHeight: '1.7' }}>{t.aboutVisionText}</p>
+              </div>
+            </div>
+
+            {/* Valores */}
+            <div style={{ padding: '0 5% 80px', maxWidth: '1200px', margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '30px' }}>
+              <div style={{ flex: '1 1 250px', padding: '30px', borderTop: '4px solid #2563eb', backgroundColor: '#ffffff', borderRadius: '12px' }}>
+                <h3 style={{ color: '#0f172a', marginBottom: '10px' }}>{t.value1Title}</h3>
+                <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>{t.value1Text}</p>
+              </div>
+              <div style={{ flex: '1 1 250px', padding: '30px', borderTop: '4px solid #2563eb', backgroundColor: '#ffffff', borderRadius: '12px' }}>
+                <h3 style={{ color: '#0f172a', marginBottom: '10px' }}>{t.value2Title}</h3>
+                <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>{t.value2Text}</p>
+              </div>
+              <div style={{ flex: '1 1 250px', padding: '30px', borderTop: '4px solid #2563eb', backgroundColor: '#ffffff', borderRadius: '12px' }}>
+                <h3 style={{ color: '#0f172a', marginBottom: '10px' }}>{t.value3Title}</h3>
+                <p style={{ color: '#64748b', fontSize: '14px', lineHeight: '1.6' }}>{t.value3Text}</p>
+              </div>
+            </div>
           </div>
         )}
 
+        {/* VISTA: CONTACTO */}
         {view === 'contact' && (
           <div style={{ padding: '80px 5%', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
             <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '30px', textAlign: 'center', color: '#0f172a' }}>{t.contactTitle}</h1>
             <form onSubmit={(e) => { e.preventDefault(); alert(lang==='en'?'Message sent!':'¡Mensaje enviado!'); }}>
-              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1' }} required />
-              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1' }} required />
-              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1' }} required></textarea>
+              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a' }} required />
+              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a' }} required />
+              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a' }} required></textarea>
               <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t.btnSend}</button>
             </form>
           </div>
         )}
 
+        {/* VISTA: INICIO */}
         {view === 'home' && (
           <>
-            {/* HERO & CALCULATOR */}
             <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', padding: '60px 5%', gap: '40px', background: 'linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%)' }}>
               <div style={{ flex: '1 1 400px', maxWidth: '600px' }}>
-                <h1 style={{ fontSize: '56px', fontWeight: '900', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-2px' }}>
+                <h1 style={{ fontSize: '56px', fontWeight: '900', lineHeight: '1.1', marginBottom: '20px', letterSpacing: '-2px', color: '#0f172a' }}>
                   {t.heroTitle1} <span style={{color: '#2563eb'}}>{t.heroTitle2}</span>
                 </h1>
                 <p style={{ fontSize: '18px', color: '#475569', lineHeight: '1.6', marginBottom: '30px' }}>{t.heroSub}</p>
@@ -223,11 +275,11 @@ function App() {
                   
                   {mostrarLogin && !session ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
-                      <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '10px' }}>{t.loginTitle}</h3>
+                      <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '10px', color: '#0f172a' }}>{t.loginTitle}</h3>
                       <p style={{textAlign: 'center', color: '#64748b', fontSize: '14px', marginBottom: '20px'}}>{t.loginSub}</p>
                       <form>
-                        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '10px', borderRadius: '12px', border: '1px solid #cbd5e1' }} required />
-                        <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '20px', borderRadius: '12px', border: '1px solid #cbd5e1' }} required />
+                        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '10px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a' }} required />
+                        <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '20px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a' }} required />
                         <div style={{ display: 'flex', gap: '10px' }}>
                           <button onClick={(e) => handleAuth('signin', e)} style={{ flex: 1, padding: '14px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnEnter}</button>
                           <button onClick={(e) => handleAuth('signup', e)} style={{ flex: 1, padding: '14px', backgroundColor: '#e2e8f0', color: '#1e293b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnRegister}</button>
@@ -238,8 +290,6 @@ function App() {
                     </div>
                   ) : !ordenCreada ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
-                      
-                      {/* TABS COMPRAR/VENDER */}
                       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                         <div style={{ backgroundColor: '#f1f5f9', padding: '5px', borderRadius: '20px', display: 'flex', gap: '5px' }}>
                            <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#ffffff' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', boxShadow: isBuying ? '0 2px 5px rgba(0,0,0,0.05)' : 'none', color: isBuying ? '#0f172a' : '#64748b' }}>
@@ -256,13 +306,12 @@ function App() {
                           <label style={{ fontSize: '13px', color: '#64748b', display: 'block', marginBottom: '5px' }}>{t.youSend}</label>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <input type="number" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} style={{ width: '50%', border: 'none', background: 'transparent', fontSize: '24px', fontWeight: 'bold', color: '#0f172a', outline: 'none' }} min="10" required />
-                            
                             {isBuying ? (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#ffffff', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#ffffff', color: '#0f172a', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
                             ) : (
                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px', borderRadius: '10px' }}>
                                  <img src={cryptoLogos[cryptoType]} alt={cryptoType} width="20" />
-                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}>
+                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#0f172a', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
                                    <option value="USDT">USDT</option>
                                    <option value="USDC">USDC</option>
                                  </select>
@@ -279,13 +328,12 @@ function App() {
                           <label style={{ fontSize: '13px', color: '#64748b', display: 'block', marginBottom: '5px' }}>{t.youGet}</label>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <input type="text" value={cargandoPrecio ? "..." : receiveAmount} disabled style={{ width: '50%', border: 'none', background: 'transparent', fontSize: '24px', fontWeight: 'bold', color: '#0f172a', outline: 'none' }} />
-                            
                             {!isBuying ? (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#ffffff', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
+                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#ffffff', color: '#0f172a', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
                             ) : (
                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#ffffff', padding: '6px 12px', borderRadius: '10px' }}>
                                  <img src={cryptoLogos[cryptoType]} alt={cryptoType} width="20" />
-                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}>
+                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#0f172a', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
                                    <option value="USDT">USDT</option>
                                    <option value="USDC">USDC</option>
                                  </select>
@@ -296,7 +344,7 @@ function App() {
 
                         <div style={{ marginBottom: '25px' }}>
                           <label style={{ fontSize: '13px', color: '#64748b', display: 'block', marginBottom: '8px' }}>{isBuying ? t.walletBuy : t.walletSell}</label>
-                          <input type="text" value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} required />
+                          <input type="text" value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #cbd5e1', backgroundColor: '#ffffff', color: '#0f172a', boxSizing: 'border-box' }} required />
                         </div>
 
                         <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting')} style={{ width: '100%', padding: '18px', backgroundColor: cargandoPrecio ? '#94a3b8' : '#2563eb', color: 'white', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: cargandoPrecio ? 'not-allowed' : 'pointer' }}>
@@ -309,11 +357,9 @@ function App() {
                       <div style={{ backgroundColor: '#dcfce7', color: '#166534', padding: '15px', borderRadius: '12px', fontWeight: 'bold', marginBottom: '25px' }}>
                         {isBuying ? t.successBuy : t.successSell}
                       </div>
-                      
                       <p style={{ color: '#475569', fontSize: '15px', marginBottom: '20px' }}>
                         {isBuying ? t.successBuyText : t.successSellText} <strong>{isBuying ? sendAmount : sendAmount} {isBuying ? 'EUR' : cryptoType}</strong> a:
                       </p>
-                      
                       <div style={{ backgroundColor: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '12px', padding: '20px', textAlign: 'left', marginBottom: '25px' }}>
                         {isBuying ? (
                           <>
@@ -330,7 +376,6 @@ function App() {
                         <hr style={{ border: 'none', borderTop: '1px dashed #cbd5e1', margin: '15px 0' }} />
                         <p style={{ margin: '0', fontSize: '15px', color: '#dc2626', fontWeight: 'bold' }}>{t.ref} <span style={{ float: 'right', fontSize: '18px' }}>#{numeroReferencia}</span></p>
                       </div>
-                      
                       <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', backgroundColor: '#f1f5f9', color: '#0f172a', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold' }}>
                         {t.btnNewOp}
                       </button>
@@ -366,10 +411,11 @@ function App() {
 
       {/* FOOTER */}
       <footer style={{ backgroundColor: '#0f172a', color: '#94a3b8', padding: '40px 5%', textAlign: 'center', fontSize: '14px' }}>
-        <div style={{ marginBottom: '20px', fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>BARZCORP</div>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>
+          <BarzcorpLogo /> BARZCORP
+        </div>
         <p>Copyright © 2026 Barzcorp Exchange. {t.footerRight}</p>
       </footer>
-
     </div>
   );
 }
