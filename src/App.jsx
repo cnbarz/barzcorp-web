@@ -8,6 +8,7 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authMsg, setAuthMsg] = useState('');
+  const [mostrarLogin, setMostrarLogin] = useState(false); // Controla cuándo pedir el login
 
   // === ESTADOS DEL EXCHANGE ===
   const [fiatAmount, setFiatAmount] = useState(100);
@@ -21,17 +22,17 @@ function App() {
 
   const margenGanancia = 1.03;
 
-  // Verifica si el usuario ya inició sesión
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      if (session) setMostrarLogin(false);
     });
     supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) setMostrarLogin(false);
     });
   }, []);
 
-  // Lógica de Precios
   useEffect(() => {
     const obtenerPrecioMercado = async () => {
       setCargandoPrecio(true);
@@ -49,30 +50,20 @@ function App() {
 
   const cryptoAmount = tasaDeCambio > 0 ? (fiatAmount / tasaDeCambio).toFixed(2) : 0;
 
-  // === FUNCIONES DE LOGIN Y REGISTRO ===
-  const handleSignUp = async (e) => {
+  // === LÓGICA DE COMPRA MODIFICADA ===
+  const handleBuyIntent = async (e) => {
     e.preventDefault();
-    setAuthMsg('Creando cuenta...');
-    const { error } = await supabase.auth.signUp({ email, password });
-    if (error) setAuthMsg(error.message);
-    else setAuthMsg('✅ Revisa tu correo para confirmar tu cuenta.');
-  };
+    
+    // Si no hay sesión, frenamos la compra y mostramos el login
+    if (!session) {
+      setMostrarLogin(true);
+      return;
+    }
 
-  const handleSignIn = async (e) => {
-    e.preventDefault();
-    setAuthMsg('Iniciando...');
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setAuthMsg('❌ Datos incorrectos.');
-  };
-
-  // === FUNCIÓN DE COMPRA ===
-  const handleBuy = async (e) => {
-    e.preventDefault();
     setStatus('Processing your order...');
     const refUnica = Math.floor(100000 + Math.random() * 900000).toString();
 
     try {
-      // Agregamos el email real del usuario al mensaje de Telegram
       const response = await axios.post('https://barzcorp-api.onrender.com/nueva-orden', {
         nombreCliente: `${session.user.email} (Ref: #${refUnica})`,
         cantidad: cryptoAmount,
@@ -90,53 +81,63 @@ function App() {
     }
   };
 
-  // ==========================================
-  // PANTALLA 1: LOGIN / REGISTRO
-  // ==========================================
-  if (!session) {
-    return (
-      <div style={{ fontFamily: 'system-ui, sans-serif', backgroundColor: '#0f172a', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={{ backgroundColor: '#ffffff', padding: '40px', borderRadius: '16px', width: '100%', maxWidth: '350px' }}>
-          <h2 style={{ textAlign: 'center', color: '#1e293b' }}>Bienvenido a <br/><span style={{color: '#2563eb', fontWeight: '900', fontSize: '24px'}}>BARZCORP</span></h2>
-          <p style={{textAlign: 'center', color: '#64748b', fontSize: '14px', marginBottom: '20px'}}>Inicia sesión para operar</p>
-          
-          <form>
-            <input type="email" placeholder="Tu correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} required />
-            <input type="password" placeholder="Tu contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} required />
-            
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={handleSignIn} style={{ flex: 1, padding: '12px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Entrar</button>
-              <button onClick={handleSignUp} style={{ flex: 1, padding: '12px', backgroundColor: '#e2e8f0', color: '#1e293b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Registrarse</button>
-            </div>
-          </form>
-          {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? 'red' : 'green' }}>{authMsg}</p>}
-        </div>
-      </div>
-    );
-  }
+  const handleSignUp = async (e) => {
+    e.preventDefault();
+    setAuthMsg('Creando cuenta...');
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) setAuthMsg(error.message);
+    else setAuthMsg('✅ Revisa tu correo para confirmar tu cuenta.');
+  };
 
-  // ==========================================
-  // PANTALLA 2: EL EXCHANGE (Solo si hay sesión)
-  // ==========================================
+  const handleSignIn = async (e) => {
+    e.preventDefault();
+    setAuthMsg('Iniciando...');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) setAuthMsg('❌ Datos incorrectos.');
+  };
+
   return (
     <div style={{ fontFamily: 'system-ui, sans-serif', backgroundColor: '#0f172a', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#333' }}>
-      <div style={{ backgroundColor: '#ffffff', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', width: '100%', maxWidth: '420px' }}>
+      <div style={{ backgroundColor: '#ffffff', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', width: '100%', maxWidth: '420px', position: 'relative' }}>
         
-        {/* Botón para cerrar sesión */}
-        <button onClick={() => supabase.auth.signOut()} style={{ float: 'right', background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>Cerrar Sesión</button>
+        {session && (
+          <button onClick={() => supabase.auth.signOut()} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+            Cerrar Sesión
+          </button>
+        )}
         
-        <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '34px', fontWeight: '900', color: '#1e293b', letterSpacing: '-1px', clear: 'both' }}>
+        <h1 style={{ textAlign: 'center', margin: '0 0 10px 0', fontSize: '34px', fontWeight: '900', color: '#1e293b', letterSpacing: '-1px' }}>
           BARZCORP <span style={{color: '#2563eb'}}>EXCHANGE</span>
         </h1>
 
-        {!ordenCreada ? (
-          <>
+        {/* SI EL USUARIO NO TIENE SESIÓN Y QUIERE COMPRAR -> MOSTRAMOS LOGIN */}
+        {mostrarLogin && !session ? (
+          <div style={{ animation: 'fadeIn 0.3s' }}>
+            <p style={{textAlign: 'center', color: '#64748b', fontSize: '14px', marginBottom: '20px'}}>
+              Para continuar con tu compra, por favor inicia sesión o crea una cuenta.
+            </p>
+            <form>
+              <input type="email" placeholder="Tu correo electrónico" value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} required />
+              <input type="password" placeholder="Tu contraseña" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '12px', marginBottom: '20px', borderRadius: '8px', border: '1px solid #cbd5e1', boxSizing: 'border-box' }} required />
+              
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button onClick={handleSignIn} style={{ flex: 1, padding: '12px', backgroundColor: '#2563eb', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Entrar</button>
+                <button onClick={handleSignUp} style={{ flex: 1, padding: '12px', backgroundColor: '#e2e8f0', color: '#1e293b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Registrarse</button>
+              </div>
+              <button onClick={() => setMostrarLogin(false)} style={{ width: '100%', padding: '10px', marginTop: '10px', backgroundColor: 'transparent', color: '#64748b', border: 'none', cursor: 'pointer', fontSize: '14px' }}>
+                ← Volver a la calculadora
+              </button>
+            </form>
+            {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? 'red' : 'green' }}>{authMsg}</p>}
+          </div>
+        ) : !ordenCreada ? (
+          /* PANTALLA PRINCIPAL: CALCULADORA */
+          <div style={{ animation: 'fadeIn 0.3s' }}>
             <p style={{ textAlign: 'center', margin: '0 0 25px 0', fontSize: '13px', color: '#64748b', fontWeight: '500' }}>
               {cargandoPrecio ? "Connecting to live market..." : `1 ${cryptoType} = ${tasaDeCambio.toFixed(3)} EUR`}
             </p>
             
-            <form onSubmit={handleBuy}>
-              {/* ... CÓDIGO DE LAS CASILLAS (EUR, USDT, WALLET) ... */}
+            <form onSubmit={handleBuyIntent}>
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ fontWeight: 'bold', fontSize: '14px', color: '#475569' }}>You send (EUR):</label>
                 <input type="number" value={fiatAmount} onChange={(e) => setFiatAmount(e.target.value)} style={{ width: '100%', padding: '12px', marginTop: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', fontSize: '18px', boxSizing: 'border-box', backgroundColor: '#f8fafc', color: '#0f172a' }} min="10" required />
@@ -163,7 +164,7 @@ function App() {
               </button>
             </form>
             {status && status.includes('❌') && <div style={{ marginTop: '20px', padding: '15px', borderRadius: '8px', backgroundColor: '#fee2e2', color: '#991b1b', textAlign: 'center', fontSize: '14px', fontWeight: '500' }}>{status}</div>}
-          </>
+          </div>
         ) : (
           /* INSTRUCCIONES DE PAGO */
           <div style={{ textAlign: 'center', animation: 'fadeIn 0.5s' }}>
