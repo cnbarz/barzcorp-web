@@ -26,6 +26,8 @@ const dict = {
     bank: "Bank:", beneficiary: "Beneficiary:", ref: "Reference:", btnNewOp: "New Operation",
     buyBlocksTitle: "Get Your Money's worth!", buyBlocksSub: "Ready to buy crypto? See below how much your money can get you",
     pay: "Pay", get: "Get", buyNow: "Buy now →", feeLabel: "Fee applied:",
+    p2pTitle: "Also available on P2P Platforms", p2pSub: "Prefer using escrow? Trade with our verified merchant accounts on major exchanges.",
+    verified: "✓ Verified Merchant", tradeOn: "Trade on",
     aboutTitle: "About Barzcorp", 
     aboutIntro: "Barzcorp offers fiat on-ramp and off-ramp services (fiat-crypto-fiat) for private individuals and legal entities across the SEPA zone in Europe. Services are provided through different channels up to the customer’s choice:",
     aboutP2pTitle: "P2P Marketplace Platforms", aboutP2p: "We operate on major platforms (Binance, OKX, Bitget, Bybit etc.). This service channel is mostly suitable for private individuals looking for additional security through escrow services.",
@@ -61,6 +63,8 @@ const dict = {
     bank: "Banco:", beneficiary: "Beneficiario:", ref: "Concepto:", btnNewOp: "Nueva Operación",
     buyBlocksTitle: "¡Sácale partido a tu dinero!", buyBlocksSub: "¿Listo para comprar cripto? Mira cuánto puedes obtener a continuación",
     pay: "Pagas", get: "Recibes", buyNow: "Comprar →", feeLabel: "Comisión:",
+    p2pTitle: "También en Plataformas P2P", p2pSub: "¿Prefieres usar garantías? Opera con nuestras cuentas de comerciante verificado en los principales exchanges.",
+    verified: "✓ Comerciante Verificado", tradeOn: "Operar en",
     aboutTitle: "Sobre Barzcorp",
     aboutIntro: "Barzcorp ofrece servicios de entrada y salida de fiat (fiat-cripto-fiat) para particulares y entidades legales en toda la zona SEPA en Europa. Los servicios se brindan a través de diferentes canales a elección del cliente:",
     aboutP2pTitle: "Plataformas de Mercado P2P", aboutP2p: "Operamos en las principales plataformas (Binance, OKX, Bitget, Bybit, etc.). Este canal es ideal para particulares que buscan seguridad adicional a través del servicio de depósito en garantía (escrow).",
@@ -101,7 +105,6 @@ function App() {
   const [lang, setLang] = useState('en');
   const t = dict[lang];
 
-  // Motor de Parallax (Efecto Cristal y Curvas)
   const [scrollY, setScrollY] = useState(0);
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
@@ -112,21 +115,17 @@ function App() {
   const [view, setView] = useState('home');
   const [session, setSession] = useState(null);
   
-  // Auth States
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [isSignUpView, setIsSignUpView] = useState(false);
   const [authMsg, setAuthMsg] = useState('');
   
-  // Form Data
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [currency, setCurrency] = useState('EUR');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Exchange States
   const [isBuying, setIsBuying] = useState(true);
-  const [sendAmount, setSendAmount] = useState(100);
   const [cryptoType, setCryptoType] = useState('USDT');
   const [wallet, setWallet] = useState('');
   const [status, setStatus] = useState('');
@@ -134,6 +133,10 @@ function App() {
   const [cargandoPrecio, setCargandoPrecio] = useState(true);
   const [ordenCreada, setOrdenCreada] = useState(false);
   const [numeroReferencia, setNumeroReferencia] = useState('');
+
+  const [fiatInput, setFiatInput] = useState('100');
+  const [cryptoInput, setCryptoInput] = useState('');
+  const [activeTier, setActiveTier] = useState('3.0%');
 
   const blockAmounts = [100, 250, 500, 1000, 1500];
 
@@ -157,21 +160,50 @@ function App() {
     obtenerPrecioMercado();
   }, [cryptoType]);
 
-  const calcularTasas = (montoIngresado, isBuyingAction) => {
-    const valorEnEuros = isBuyingAction ? Number(montoIngresado) : Number(montoIngresado) * precioReal;
+  useEffect(() => {
+    if (!cargandoPrecio) handleFiatChange(fiatInput);
+  }, [precioReal, isBuying]);
+
+  const calcularTasas = (montoEuros) => {
     let margen = 1.03; 
     let porcentajeMostrar = "3.0%";
-
-    if (valorEnEuros >= 1500) { margen = 1.015; porcentajeMostrar = "1.5%"; } 
-    else if (valorEnEuros >= 500) { margen = 1.02; porcentajeMostrar = "2.0%"; }
-
-    const tasaCompra = precioReal * margen;
-    const tasaVenta = precioReal * (2 - margen);
-    return { tasaCompra, tasaVenta, porcentajeMostrar };
+    if (montoEuros >= 1500) { margen = 1.015; porcentajeMostrar = "1.5%"; } 
+    else if (montoEuros >= 500) { margen = 1.02; porcentajeMostrar = "2.0%"; }
+    return { tasaCompra: precioReal * margen, tasaVenta: precioReal * (2 - margen), porcentajeMostrar };
   };
 
-  const { tasaCompra, tasaVenta, porcentajeMostrar } = calcularTasas(sendAmount, isBuying);
-  const receiveAmount = isBuying ? (tasaCompra > 0 ? (sendAmount / tasaCompra).toFixed(2) : 0) : (tasaVenta > 0 ? (sendAmount * tasaVenta).toFixed(2) : 0);
+  const handleFiatChange = (value) => {
+    setFiatInput(value);
+    const numValue = Number(value);
+    if (numValue > 0) {
+      const { tasaCompra, tasaVenta, porcentajeMostrar } = calcularTasas(numValue);
+      setActiveTier(porcentajeMostrar);
+      if (isBuying) {
+        setCryptoInput((numValue / tasaCompra).toFixed(2));
+      } else {
+        setCryptoInput((numValue / tasaVenta).toFixed(2));
+      }
+    } else {
+      setCryptoInput('');
+    }
+  };
+
+  const handleCryptoChange = (value) => {
+    setCryptoInput(value);
+    const numValue = Number(value);
+    if (numValue > 0) {
+      const approxFiat = numValue * precioReal; 
+      const { tasaCompra, tasaVenta, porcentajeMostrar } = calcularTasas(approxFiat);
+      setActiveTier(porcentajeMostrar);
+      if (isBuying) {
+        setFiatInput((numValue * tasaCompra).toFixed(2));
+      } else {
+        setFiatInput((numValue * tasaVenta).toFixed(2));
+      }
+    } else {
+      setFiatInput('');
+    }
+  };
 
   const handleTransaction = async (e) => {
     e.preventDefault();
@@ -182,9 +214,9 @@ function App() {
     try {
       const response = await axios.post('https://barzcorp-api.onrender.com/nueva-orden', {
         nombreCliente: `${session.user.user_metadata?.first_name || session.user.email} (Ref: #${refUnica}) - TIPO: ${isBuying ? 'COMPRA' : 'VENTA'}`,
-        cantidad: isBuying ? receiveAmount : sendAmount,
+        cantidad: isBuying ? cryptoInput : fiatInput,
         monedaCripto: cryptoType,
-        montoFiat: isBuying ? sendAmount : receiveAmount,
+        montoFiat: isBuying ? fiatInput : cryptoInput,
         walletCliente: wallet
       });
 
@@ -219,26 +251,45 @@ function App() {
     }
   };
 
+  const selectBlock = (amount) => {
+    setIsBuying(true);
+    setCryptoType('USDT');
+    handleFiatChange(amount.toString());
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const cryptoLogos = {
     USDT: "https://assets.coingecko.com/coins/images/325/standard/Tether.png",
     USDC: "https://assets.coingecko.com/coins/images/6319/standard/usdc.png"
   };
 
-  // Obtener nombre del usuario si está logueado
   const userName = session?.user?.user_metadata?.first_name 
     ? `${session.user.user_metadata.first_name} ${session.user.user_metadata.last_name || ''}`
     : session?.user?.email;
 
+  const boxStyle = {
+    display: 'flex', backgroundColor: '#111827', border: '1px solid #374151',
+    borderRadius: '16px', padding: '8px', alignItems: 'center', justifyContent: 'space-between'
+  };
+
+  const inputStyle = {
+    flex: 1, background: 'transparent', border: 'none', color: '#ffffff',
+    fontSize: '24px', fontWeight: 'bold', outline: 'none', padding: '10px', width: '100%'
+  };
+
+  const labelStyle = {
+    width: '120px', height: '45px', display: 'flex', alignItems: 'center',
+    justifyContent: 'center', gap: '8px', backgroundColor: '#374151',
+    color: '#ffffff', borderRadius: '10px', fontWeight: 'bold', flexShrink: 0
+  };
+
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#111827', color: '#f3f4f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
       
-      {/* FONDO EFECTO CRISTAL Y CURVAS CON PARALLAX */}
+      {/* FONDO EFECTO CRISTAL Y CURVAS */}
       <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', top: 0, left: 0, overflow: 'hidden' }}>
-        {/* Luces Aurora */}
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * 0.15}px)` }} />
         <div style={{ position: 'absolute', bottom: '10%', left: '-20%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * -0.1}px)` }} />
-        
-        {/* Curvas SVG Cristalinas (Parallax) */}
         <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '20%', width: '100%', transform: `translateY(${scrollY * -0.25}px)`, opacity: 0.05, transition: 'transform 0.1s ease-out' }}>
           <path fill="#10b981" d="M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,112C672,117,768,171,864,197.3C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
@@ -279,10 +330,9 @@ function App() {
         </div>
       </nav>
 
-      {/* CONTENIDO PRINCIPAL (Con z-index para estar sobre el parallax) */}
+      {/* CONTENIDO PRINCIPAL */}
       <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
         
-        {/* VISTA: FAQ */}
         {view === 'faq' && (
           <div style={{ padding: '80px 5%', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
             <h1 style={{ fontSize: '40px', fontWeight: '900', marginBottom: '40px', color: '#ffffff', textAlign: 'center' }}>{t.faqTitle}</h1>
@@ -297,7 +347,6 @@ function App() {
           </div>
         )}
 
-        {/* VISTA: ABOUT US */}
         {view === 'about' && (
           <div style={{ animation: 'fadeIn 0.4s', padding: '80px 5%', maxWidth: '900px', margin: '0 auto' }}>
             <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '20px', color: '#ffffff', textAlign: 'center' }}>{t.aboutTitle}</h1>
@@ -319,7 +368,6 @@ function App() {
           </div>
         )}
 
-        {/* VISTA: CONTACTO */}
         {view === 'contact' && (
           <div style={{ padding: '80px 5%', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
             <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '30px', textAlign: 'center', color: '#ffffff' }}>{t.contactTitle}</h1>
@@ -332,7 +380,6 @@ function App() {
           </div>
         )}
 
-        {/* VISTA: INICIO */}
         {view === 'home' && (
           <>
             <header style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', padding: '60px 5%', gap: '40px' }}>
@@ -393,7 +440,7 @@ function App() {
                       {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? '#ef4444' : '#10b981' }}>{authMsg}</p>}
                     </div>
                   ) : !ordenCreada ? (
-                    <div style={{ animation: 'fadeIn 0.3s' }}>
+                    <div style={{ animation: 'fadeIn 0.3s', position: 'relative' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                         <div style={{ backgroundColor: '#111827', padding: '5px', borderRadius: '20px', display: 'flex', gap: '5px' }}>
                            <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: isBuying ? '#ffffff' : '#9ca3af', transition: '0.2s' }}>{t.tabBuy}</div>
@@ -401,42 +448,43 @@ function App() {
                         </div>
                       </div>
 
+                      <div style={{ position: 'absolute', top: '15px', right: '0', fontSize: '11px', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '2px 8px', borderRadius: '8px', backgroundColor: 'rgba(16,185,129,0.1)' }}>
+                        {t.feeLabel} {activeTier}
+                      </div>
+
                       <form onSubmit={handleTransaction}>
-                        <div style={{ marginBottom: '20px', backgroundColor: '#111827', padding: '15px', borderRadius: '16px', border: '1px solid #374151', position: 'relative' }}>
+                        <div style={{ marginBottom: '15px' }}>
                           <label style={{ fontSize: '13px', color: '#9ca3af', display: 'block', marginBottom: '5px' }}>{t.youSend}</label>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <input type="number" value={sendAmount} onChange={(e) => setSendAmount(e.target.value)} style={{ width: '50%', border: 'none', background: 'transparent', fontSize: '24px', fontWeight: 'bold', color: '#ffffff', outline: 'none' }} min="10" required />
+                          <div style={boxStyle}>
+                            <input type="number" value={isBuying ? fiatInput : cryptoInput} onChange={(e) => isBuying ? handleFiatChange(e.target.value) : handleCryptoChange(e.target.value)} style={inputStyle} min="0" step="any" required />
                             {isBuying ? (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#374151', color: '#ffffff', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
+                               <div style={labelStyle}>💶 EUR</div>
                             ) : (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#374151', padding: '6px 12px', borderRadius: '10px' }}>
+                               <div style={{...labelStyle, cursor: 'pointer'}}>
                                  <img src={cryptoLogos[cryptoType]} alt={cryptoType} width="20" />
-                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#ffffff', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
+                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#ffffff', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent', paddingRight: '5px' }}>
                                    <option value="USDT">USDT</option>
                                    <option value="USDC">USDC</option>
                                  </select>
                                </div>
                             )}
                           </div>
-                          <div style={{ position: 'absolute', top: '15px', right: '15px', fontSize: '11px', color: '#10b981', border: '1px solid rgba(16,185,129,0.3)', padding: '2px 6px', borderRadius: '4px', backgroundColor: 'rgba(16,185,129,0.1)' }}>
-                            {t.feeLabel} {porcentajeMostrar}
-                          </div>
                         </div>
 
-                        <div style={{ textAlign: 'center', margin: '-15px 0', position: 'relative', zIndex: 2 }}>
-                          <div style={{ display: 'inline-block', backgroundColor: '#1f2937', padding: '8px', borderRadius: '50%', border: '1px solid #374151', color: '#10b981' }}>↓</div>
+                        <div style={{ textAlign: 'center', margin: '-10px 0', position: 'relative', zIndex: 2 }}>
+                          <div style={{ display: 'inline-block', backgroundColor: '#1f2937', padding: '6px', borderRadius: '50%', border: '1px solid #374151', color: '#10b981', fontSize: '12px' }}>↓</div>
                         </div>
 
-                        <div style={{ marginBottom: '20px', backgroundColor: '#111827', padding: '15px', borderRadius: '16px', border: '1px solid #374151' }}>
+                        <div style={{ marginBottom: '25px' }}>
                           <label style={{ fontSize: '13px', color: '#9ca3af', display: 'block', marginBottom: '5px' }}>{t.youGet}</label>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <input type="text" value={cargandoPrecio ? "..." : receiveAmount} disabled style={{ width: '50%', border: 'none', background: 'transparent', fontSize: '24px', fontWeight: 'bold', color: '#ffffff', outline: 'none' }} />
+                          <div style={boxStyle}>
+                            <input type="number" value={isBuying ? cryptoInput : fiatInput} onChange={(e) => isBuying ? handleCryptoChange(e.target.value) : handleFiatChange(e.target.value)} style={inputStyle} min="0" step="any" required />
                             {!isBuying ? (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold', backgroundColor: '#374151', color: '#ffffff', padding: '8px 12px', borderRadius: '10px' }}>💶 EUR</div>
+                               <div style={labelStyle}>💶 EUR</div>
                             ) : (
-                               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: '#374151', padding: '6px 12px', borderRadius: '10px' }}>
+                               <div style={{...labelStyle, cursor: 'pointer'}}>
                                  <img src={cryptoLogos[cryptoType]} alt={cryptoType} width="20" />
-                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#ffffff', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent' }}>
+                                 <select value={cryptoType} onChange={(e) => setCryptoType(e.target.value)} style={{ border: 'none', fontWeight: 'bold', color: '#ffffff', outline: 'none', cursor: 'pointer', backgroundColor: 'transparent', paddingRight: '5px' }}>
                                    <option value="USDT">USDT</option>
                                    <option value="USDC">USDC</option>
                                  </select>
@@ -450,7 +498,7 @@ function App() {
                           <input type="text" value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', boxSizing: 'border-box' }} required />
                         </div>
 
-                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting')} style={{ width: '100%', padding: '18px', backgroundColor: cargandoPrecio ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: cargandoPrecio ? 'not-allowed' : 'pointer', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.3)' }}>
+                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting') || !fiatInput} style={{ width: '100%', padding: '18px', backgroundColor: (!fiatInput || cargandoPrecio) ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: (!fiatInput || cargandoPrecio) ? 'not-allowed' : 'pointer', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.3)' }}>
                           {status ? status : (isBuying ? `${t.btnBuy} ${cryptoType}` : `${t.btnSell} ${cryptoType}`)}
                         </button>
                       </form>
@@ -461,7 +509,7 @@ function App() {
                         {isBuying ? t.successBuy : t.successSell}
                       </div>
                       <p style={{ color: '#d1d5db', fontSize: '15px', marginBottom: '20px' }}>
-                        {isBuying ? t.successBuyText : t.successSellText} <strong style={{color: '#ffffff'}}>{isBuying ? sendAmount : sendAmount} {isBuying ? 'EUR' : cryptoType}</strong> a:
+                        {isBuying ? t.successBuyText : t.successSellText} <strong style={{color: '#ffffff'}}>{isBuying ? fiatInput : cryptoInput} {isBuying ? 'EUR' : cryptoType}</strong> a:
                       </p>
                       <div style={{ backgroundColor: '#111827', border: '1px solid #374151', borderRadius: '12px', padding: '20px', textAlign: 'left', marginBottom: '25px' }}>
                         {isBuying ? (
@@ -495,9 +543,9 @@ function App() {
                
                <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px' }}>
                   {blockAmounts.map((amount, index) => {
-                    const blockRates = calcularTasas(amount, true);
+                    const blockRates = calcularTasas(amount);
                     return (
-                      <div key={index} onClick={() => selectBlock(amount)} style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s', ':hover': {transform: 'translateY(-5px)'} }}>
+                      <div key={index} onClick={() => selectBlock(amount)} style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s' }}>
                          {amount >= 500 && (
                            <div style={{ position: 'absolute', top: '15px', right: '15px', backgroundColor: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', border: '1px solid rgba(16,185,129,0.5)' }}>
                              MEJOR TASA
@@ -513,6 +561,55 @@ function App() {
                     );
                   })}
                </div>
+            </section>
+
+            {/* SECCIÓN P2P (MINIATURAS) */}
+            <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px', textAlign: 'center' }}>{t.p2pTitle}</h2>
+              <p style={{ color: '#9ca3af', marginBottom: '40px', textAlign: 'center' }}>{t.p2pSub}</p>
+
+              <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                
+                {/* BITGET CARD */}
+                <a href="https://www.bitget.com/p2p-trade/personal?shareCode=BG3NN9E3LL6QR&qrAction=adCommand" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#00E4C6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🐰</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#00E4C6', fontSize: '13px', fontWeight: '600' }}>Bitget P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#00E4C6', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} Bitget →</button>
+                </a>
+
+                {/* OKX CARD */}
+                <a href="https://www.okx.com/p2p/ads-merchant?publicUserId=120955232a" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛡️</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600' }}>OKX P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} OKX →</button>
+                </a>
+
+                {/* MEXC CARD */}
+                <a href="https://s.mexc.com/p2p_event/UuZCNVgh" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>⚡</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600' }}>MEXC P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} MEXC →</button>
+                </a>
+
+              </div>
             </section>
           </>
         )}
