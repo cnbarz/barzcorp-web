@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { supabase } from './supabaseClient';
 
-// === SISTEMA DE TRADUCCIONES FRONTEND ===
+// === SISTEMA DE TRADUCCIONES ===
 const dict = {
   en: {
     navHome: "Home", navHow: "How it works", navAbout: "About Us", navContact: "Contact", navFaq: "FAQ",
@@ -85,12 +85,12 @@ const dict = {
 const faqs = {
   en: [
     { q: "How long does the verification (KYC) take?", a: "Our automated system verifies your documents in less than 5 minutes." },
-    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier. Rates start at 1.5% and drop to 0.5% for high volumes." },
+    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier. Rates start at 7.0% and drop to 5.0% for high volumes." },
     { q: "How fast will I receive my crypto/fiat?", a: "Once your SEPA transfer arrives, crypto is dispatched immediately." }
   ],
   es: [
     { q: "¿Cuánto tarda la verificación (KYC)?", a: "Nuestro sistema automatizado verifica tus documentos en menos de 5 minutos." },
-    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente. Las tasas comienzan en 1.5% y bajan hasta el 0.5% para grandes volúmenes." },
+    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente. Las tasas comienzan en 7.0% y bajan hasta el 5.0% para grandes volúmenes." },
     { q: "¿Qué tan rápido recibiré mi dinero/cripto?", a: "Una vez que llega tu transferencia SEPA, enviamos la cripto de inmediato." }
   ]
 };
@@ -143,7 +143,7 @@ function App() {
 
   const [fiatInput, setFiatInput] = useState('100');
   const [cryptoInput, setCryptoInput] = useState('');
-  const [activeTier, setActiveTier] = useState('1.5%');
+  const [activeTier, setActiveTier] = useState('7.0%');
 
   const blockAmounts = [100, 250, 500, 1000, 1500];
 
@@ -171,11 +171,12 @@ function App() {
     if (!cargandoPrecio) handleFiatChange(fiatInput);
   }, [precioReal, isBuying]);
 
+  // === NUEVA MATEMÁTICA DE MÁRGENES: BASE 7.0% ===
   const calcularTasas = (montoEuros) => {
-    let margen = 1.015; 
-    let porcentajeMostrar = "1.5%";
-    if (montoEuros >= 1500) { margen = 1.005; porcentajeMostrar = "0.5%"; } 
-    else if (montoEuros >= 500) { margen = 1.01; porcentajeMostrar = "1.0%"; }
+    let margen = 1.07; // 7.0% Ganancia Base
+    let porcentajeMostrar = "7.0%";
+    if (montoEuros >= 1500) { margen = 1.05; porcentajeMostrar = "5.0%"; } // VIP
+    else if (montoEuros >= 500) { margen = 1.06; porcentajeMostrar = "6.0%"; } // Medio
     return { tasaCompra: precioReal * margen, tasaVenta: precioReal * (2 - margen), porcentajeMostrar };
   };
 
@@ -232,7 +233,7 @@ function App() {
         setOrdenCreada(true);
       }
     } catch (error) {
-        setStatus('❌ Network Error');
+        setStatus('❌ Error');
     }
   };
 
@@ -396,6 +397,18 @@ function App() {
                 <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutRetail}</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {view === 'contact' && (
+          <div style={{ padding: '80px 5%', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+            <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '30px', textAlign: 'center', color: '#ffffff' }}>{t.contactTitle}</h1>
+            <form onSubmit={(e) => { e.preventDefault(); alert(lang==='en'?'Message sent!':'¡Mensaje enviado!'); }}>
+              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
+              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
+              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required></textarea>
+              <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t.btnSend}</button>
+            </form>
           </div>
         )}
 
@@ -623,6 +636,47 @@ function App() {
                     );
                   })}
                </div>
+            </section>
+            
+            <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px', textAlign: 'center' }}>{t.p2pTitle}</h2>
+              <p style={{ color: '#9ca3af', marginBottom: '40px', textAlign: 'center' }}>{t.p2pSub}</p>
+
+              <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <a href="https://www.bitget.com/p2p-trade/personal?shareCode=BG3NN9E3LL6QR&qrAction=adCommand" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#00E4C6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🐰</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#00E4C6', fontSize: '13px', fontWeight: '600' }}>Bitget P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#00E4C6', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} Bitget →</button>
+                </a>
+                <a href="https://www.okx.com/p2p/ads-merchant?publicUserId=120955232a" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛡️</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600' }}>OKX P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} OKX →</button>
+                </a>
+                <a href="https://s.mexc.com/p2p_event/UuZCNVgh" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
+                    <div style={{ width: '45px', height: '45px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>⚡</div>
+                    <div style={{ textAlign: 'left' }}>
+                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
+                       <div style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600' }}>MEXC P2P</div>
+                    </div>
+                  </div>
+                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
+                  <button style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} MEXC →</button>
+                </a>
+              </div>
             </section>
           </>
         )}
