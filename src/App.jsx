@@ -12,10 +12,12 @@ const dict = {
     adv1: "✅ No hidden fees", adv2: "✅ SEPA Transfers",
     loginTitle: "Welcome Back", loginSub: "Log in to your account to continue.",
     regTitle: "Create Account", regSub: "Join us to start exchanging securely.",
+    resetTitle: "Reset Password", resetSub: "Enter your email to receive a recovery link.",
     firstName: "First Name", lastName: "Last Name", currencyLabel: "Preferred Currency",
-    email: "Email address", pass: "Password", btnEnter: "Login", btnRegister: "Create Account", backCalc: "← Back to calculator",
-    toggleToReg: "Don't have an account? Sign Up", toggleToLog: "Already have an account? Sign In",
-    fillAll: "Please fill all fields.", checkEmail: "Please check your email to verify your account.",
+    email: "Email address", pass: "Password", btnEnter: "Login", btnRegister: "Create Account", btnReset: "Send Recovery Link",
+    backCalc: "← Back to calculator", backLogin: "← Back to Login",
+    toggleToReg: "Don't have an account? Sign Up", toggleToLog: "Already have an account? Sign In", forgotPass: "Forgot your password?",
+    fillAll: "Please fill all fields.", checkEmail: "Please check your email to verify your account.", resetSuccess: "✅ Recovery link sent to your email.",
     tabBuy: "Buy", tabSell: "Sell",
     youSend: "You send", youGet: "You get",
     walletBuy: "Your destination wallet address:", walletSell: "Your IBAN to receive EUR:",
@@ -49,10 +51,12 @@ const dict = {
     adv1: "✅ Sin comisiones ocultas", adv2: "✅ Transferencias SEPA",
     loginTitle: "Bienvenido de nuevo", loginSub: "Inicia sesión en tu cuenta para continuar.",
     regTitle: "Crea tu Cuenta", regSub: "Únete para operar de forma segura.",
+    resetTitle: "Restablecer Contraseña", resetSub: "Ingresa tu correo para recibir un enlace de recuperación.",
     firstName: "Nombre", lastName: "Apellido", currencyLabel: "Moneda",
-    email: "Tu correo electrónico", pass: "Tu contraseña", btnEnter: "Entrar", btnRegister: "Crear Cuenta", backCalc: "← Volver a la calculadora",
-    toggleToReg: "¿No tienes cuenta? Regístrate", toggleToLog: "¿Ya tienes cuenta? Inicia Sesión",
-    fillAll: "Por favor llena todos los campos.", checkEmail: "Revisa tu correo para verificar la cuenta.",
+    email: "Tu correo electrónico", pass: "Tu contraseña", btnEnter: "Entrar", btnRegister: "Crear Cuenta", btnReset: "Enviar Enlace",
+    backCalc: "← Volver a la calculadora", backLogin: "← Volver al inicio de sesión",
+    toggleToReg: "¿No tienes cuenta? Regístrate", toggleToLog: "¿Ya tienes cuenta? Inicia Sesión", forgotPass: "¿Olvidaste tu contraseña?",
+    fillAll: "Por favor llena todos los campos.", checkEmail: "Revisa tu correo para verificar la cuenta.", resetSuccess: "✅ Enlace enviado a tu correo.",
     tabBuy: "Comprar", tabSell: "Vender",
     youSend: "Tú envías", youGet: "Tú recibes",
     walletBuy: "Tu dirección de Wallet destino:", walletSell: "Tu cuenta IBAN para recibir EUR:",
@@ -115,8 +119,10 @@ function App() {
   const [view, setView] = useState('home');
   const [session, setSession] = useState(null);
   
+  // Auth States
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [isSignUpView, setIsSignUpView] = useState(false);
+  const [isResetView, setIsResetView] = useState(false); // NUEVO ESTADO: VISTA DE RECUPERACIÓN
   const [authMsg, setAuthMsg] = useState('');
   
   const [firstName, setFirstName] = useState('');
@@ -125,6 +131,7 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Exchange States
   const [isBuying, setIsBuying] = useState(true);
   const [cryptoType, setCryptoType] = useState('USDT');
   const [wallet, setWallet] = useState('');
@@ -229,6 +236,21 @@ function App() {
     }
   };
 
+  // NUEVA FUNCIÓN: Recuperar Contraseña
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setAuthMsg(t.processing);
+    if (!email) {
+      setAuthMsg(`❌ ${t.fillAll}`);
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin,
+    });
+    if (error) setAuthMsg(`❌ ${error.message}`);
+    else setAuthMsg(t.resetSuccess);
+  };
+
   const handleAuth = async (e) => {
     e.preventDefault();
     setAuthMsg(t.processing);
@@ -247,7 +269,7 @@ function App() {
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setAuthMsg(`❌ ${error.message}`);
-      else { setAuthMsg(''); setMostrarLogin(false); }
+      else { setAuthMsg(''); setMostrarLogin(false); setIsResetView(false); }
     }
   };
 
@@ -286,10 +308,10 @@ function App() {
   return (
     <div style={{ fontFamily: 'system-ui, -apple-system, sans-serif', backgroundColor: '#111827', color: '#f3f4f6', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative', overflowX: 'hidden' }}>
       
-      {/* FONDO EFECTO CRISTAL Y CURVAS */}
       <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', top: 0, left: 0, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * 0.15}px)` }} />
         <div style={{ position: 'absolute', bottom: '10%', left: '-20%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * -0.1}px)` }} />
+        
         <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '20%', width: '100%', transform: `translateY(${scrollY * -0.25}px)`, opacity: 0.05, transition: 'transform 0.1s ease-out' }}>
           <path fill="#10b981" d="M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,112C672,117,768,171,864,197.3C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
@@ -298,7 +320,6 @@ function App() {
         </svg>
       </div>
 
-      {/* HEADER NAVBAR */}
       <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '15px 5%', backgroundColor: 'rgba(17, 24, 39, 0.85)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div onClick={() => setView('home')} style={{ display: 'flex', alignItems: 'center', fontSize: '24px', fontWeight: '900', color: '#ffffff', letterSpacing: '-1px', cursor: 'pointer' }}>
           <BarzcorpLogo /> BARZCORP
@@ -325,12 +346,11 @@ function App() {
               <button onClick={() => supabase.auth.signOut()} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnLogout}</button>
             </div>
           ) : (
-            <button onClick={() => {setView('home'); setIsSignUpView(false); setMostrarLogin(true);}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(16,185,129,0.2)' }}>{t.btnSignIn}</button>
+            <button onClick={() => {setView('home'); setIsSignUpView(false); setIsResetView(false); setMostrarLogin(true);}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(16,185,129,0.2)' }}>{t.btnSignIn}</button>
           )}
         </div>
       </nav>
 
-      {/* CONTENIDO PRINCIPAL */}
       <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
         
         {view === 'faq' && (
@@ -394,49 +414,74 @@ function App() {
                 </div>
               </div>
 
-              {/* CALCULADORA / FORMULARIO */}
+              {/* CALCULADORA / FORMULARIOS DE AUTENTICACIÓN */}
               <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(20px)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', width: '100%', maxWidth: '420px' }}>
                   
                   {mostrarLogin && !session ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
-                      <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{isSignUpView ? t.regTitle : t.loginTitle}</h3>
-                      <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{isSignUpView ? t.regSub : t.loginSub}</p>
                       
-                      <form onSubmit={handleAuth}>
-                        {isSignUpView && (
-                          <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
-                            <input type="text" placeholder={t.firstName} value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                            <input type="text" placeholder={t.lastName} value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                          </div>
-                        )}
-                        
-                        <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                        <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
-                        
-                        {isSignUpView && (
-                          <div style={{ marginBottom: '20px' }}>
-                            <label style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px', display: 'block' }}>{t.currencyLabel}</label>
-                            <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', outline: 'none' }}>
-                              <option value="EUR">EUR (€)</option>
-                              <option value="USD">USD ($)</option>
-                            </select>
-                          </div>
-                        )}
+                      {/* VISTA DE RECUPERACIÓN DE CONTRASEÑA */}
+                      {isResetView ? (
+                         <div style={{ animation: 'fadeIn 0.3s' }}>
+                           <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{t.resetTitle}</h3>
+                           <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{t.resetSub}</p>
+                           <form onSubmit={handleResetPassword}>
+                             <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '20px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                             <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>{t.btnReset}</button>
+                           </form>
+                           <div style={{ textAlign: 'center' }}>
+                             <button onClick={() => setIsResetView(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>{t.backLogin}</button>
+                           </div>
+                         </div>
+                      ) : (
+                        /* VISTA NORMAL DE LOGIN / REGISTRO */
+                        <>
+                          <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{isSignUpView ? t.regTitle : t.loginTitle}</h3>
+                          <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{isSignUpView ? t.regSub : t.loginSub}</p>
+                          
+                          <form onSubmit={handleAuth}>
+                            {isSignUpView && (
+                              <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
+                                <input type="text" placeholder={t.firstName} value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                                <input type="text" placeholder={t.lastName} value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ width: '50%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                              </div>
+                            )}
+                            
+                            <input type="email" placeholder={t.email} value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                            <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
+                            
+                            {isSignUpView && (
+                              <div style={{ marginBottom: '20px' }}>
+                                <label style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px', display: 'block' }}>{t.currencyLabel}</label>
+                                <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', outline: 'none' }}>
+                                  <option value="EUR">EUR (€)</option>
+                                  <option value="USD">USD ($)</option>
+                                </select>
+                              </div>
+                            )}
 
-                        <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
-                          {isSignUpView ? t.btnRegister : t.btnEnter}
-                        </button>
-                      </form>
+                            <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
+                              {isSignUpView ? t.btnRegister : t.btnEnter}
+                            </button>
+                          </form>
+                          
+                          <div style={{ textAlign: 'center' }}>
+                            {!isSignUpView && (
+                              <button onClick={() => setIsResetView(true)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '13px', marginBottom: '15px', textDecoration: 'underline' }}>
+                                {t.forgotPass}
+                              </button>
+                            )}
+                            <br/>
+                            <button onClick={() => setIsSignUpView(!isSignUpView)} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginBottom: '15px' }}>
+                              {isSignUpView ? t.toggleToLog : t.toggleToReg}
+                            </button>
+                            <br/>
+                            <button onClick={() => setMostrarLogin(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>{t.backCalc}</button>
+                          </div>
+                        </>
+                      )}
                       
-                      <div style={{ textAlign: 'center' }}>
-                        <button onClick={() => setIsSignUpView(!isSignUpView)} style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', fontSize: '14px', fontWeight: '600', marginBottom: '15px' }}>
-                          {isSignUpView ? t.toggleToLog : t.toggleToReg}
-                        </button>
-                        <br/>
-                        <button onClick={() => setMostrarLogin(false)} style={{ background: 'none', border: 'none', color: '#6b7280', cursor: 'pointer', fontSize: '14px' }}>{t.backCalc}</button>
-                      </div>
-
                       {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? '#ef4444' : '#10b981' }}>{authMsg}</p>}
                     </div>
                   ) : !ordenCreada ? (
@@ -563,14 +608,12 @@ function App() {
                </div>
             </section>
 
-            {/* SECCIÓN P2P (MINIATURAS) */}
+            {/* SECCIÓN P2P */}
             <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
               <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px', textAlign: 'center' }}>{t.p2pTitle}</h2>
               <p style={{ color: '#9ca3af', marginBottom: '40px', textAlign: 'center' }}>{t.p2pSub}</p>
 
               <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                
-                {/* BITGET CARD */}
                 <a href="https://www.bitget.com/p2p-trade/personal?shareCode=BG3NN9E3LL6QR&qrAction=adCommand" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                     <div style={{ width: '45px', height: '45px', backgroundColor: '#00E4C6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🐰</div>
@@ -582,8 +625,6 @@ function App() {
                   <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
                   <button style={{ width: '100%', backgroundColor: '#00E4C6', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} Bitget →</button>
                 </a>
-
-                {/* OKX CARD */}
                 <a href="https://www.okx.com/p2p/ads-merchant?publicUserId=120955232a" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                     <div style={{ width: '45px', height: '45px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛡️</div>
@@ -595,8 +636,6 @@ function App() {
                   <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
                   <button style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} OKX →</button>
                 </a>
-
-                {/* MEXC CARD */}
                 <a href="https://s.mexc.com/p2p_event/UuZCNVgh" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                     <div style={{ width: '45px', height: '45px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>⚡</div>
@@ -608,7 +647,6 @@ function App() {
                   <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
                   <button style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} MEXC →</button>
                 </a>
-
               </div>
             </section>
           </>
