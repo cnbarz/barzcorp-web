@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { supabase } from './supabaseClient';
 
-// === SISTEMA DE TRADUCCIONES ===
+// === SISTEMA DE TRADUCCIONES FRONTEND ===
 const dict = {
   en: {
     navHome: "Home", navHow: "How it works", navAbout: "About Us", navContact: "Contact", navFaq: "FAQ",
@@ -17,7 +17,9 @@ const dict = {
     email: "Email address", pass: "Password", btnEnter: "Login", btnRegister: "Create Account", btnReset: "Send Recovery Link",
     backCalc: "← Back to calculator", backLogin: "← Back to Login",
     toggleToReg: "Don't have an account? Sign Up", toggleToLog: "Already have an account? Sign In", forgotPass: "Forgot your password?",
-    fillAll: "Please fill all fields.", checkEmail: "Please check your email to verify your account.", resetSuccess: "✅ Recovery link sent to your email.",
+    fillAll: "Please fill all fields.", checkEmail: "Enter the 6-digit code sent to your email.", resetSuccess: "✅ Recovery link sent to your email.",
+    agreeTerms: "I accept the ", termsLink: "Terms of Use", mustAccept: "You must accept the Terms of Use to register.",
+    otpTitle: "Verify Your Email", otpSub: "We've sent a 6-digit code to your email.", btnVerify: "Verify Code",
     tabBuy: "Buy", tabSell: "Sell",
     youSend: "You send", youGet: "You get",
     walletBuy: "Your destination wallet address:", walletSell: "Your IBAN to receive EUR:",
@@ -30,11 +32,8 @@ const dict = {
     pay: "Pay", get: "Get", buyNow: "Buy now →", feeLabel: "Fee applied:",
     p2pTitle: "Also available on P2P Platforms", p2pSub: "Prefer using escrow? Trade with our verified merchant accounts on major exchanges.",
     verified: "✓ Verified Merchant", tradeOn: "Trade on",
-    aboutTitle: "About Barzcorp", 
-    aboutIntro: "Barzcorp offers fiat on-ramp and off-ramp services (fiat-crypto-fiat) for private individuals and legal entities across the SEPA zone in Europe. Services are provided through different channels up to the customer’s choice:",
-    aboutP2pTitle: "P2P Marketplace Platforms", aboutP2p: "We operate on major platforms (Binance, OKX, Bitget, Bybit etc.). This service channel is mostly suitable for private individuals looking for additional security through escrow services.",
-    aboutRetailTitle: "Online Retail", aboutRetail: "Direct service through our website to the customer’s external wallet. This is a quick and reliable service without intermediaries, allowing on/off ramp using customer-managed wallets.",
-    aboutOtcTitle: "OTC Desk", aboutOtc: "Tailored to meet the needs of high-volume traders and investors. Provides trust, speed, reliability, and a personal touch. Ensures fixed prices for your volume and protects from market price slippage.",
+    aboutTitle: "About Barzcorp", aboutIntro: "Barzcorp offers fiat on-ramp and off-ramp services across the SEPA zone.",
+    termsTitle: "Terms of Use", termsText: "Welcome to Barzcorp. By using our services to buy or sell digital assets, you agree to comply with European AML directives. Funds must come from an account in your own name. Third-party transfers will be refunded minus processing fees. We are not responsible for funds sent to incorrect wallet addresses.",
     howTitle: "Three simple steps",
     step1: "Create account", step1Sub: "Register and verify your identity.",
     step2: "Transfer funds", step2Sub: "Send funds securely via SEPA.",
@@ -56,7 +55,9 @@ const dict = {
     email: "Tu correo electrónico", pass: "Tu contraseña", btnEnter: "Entrar", btnRegister: "Crear Cuenta", btnReset: "Enviar Enlace",
     backCalc: "← Volver a la calculadora", backLogin: "← Volver al inicio de sesión",
     toggleToReg: "¿No tienes cuenta? Regístrate", toggleToLog: "¿Ya tienes cuenta? Inicia Sesión", forgotPass: "¿Olvidaste tu contraseña?",
-    fillAll: "Por favor llena todos los campos.", checkEmail: "Revisa tu correo para verificar la cuenta.", resetSuccess: "✅ Enlace enviado a tu correo.",
+    fillAll: "Por favor llena todos los campos.", checkEmail: "Ingresa el código de 6 dígitos enviado a tu correo.", resetSuccess: "✅ Enlace enviado a tu correo.",
+    agreeTerms: "Acepto los ", termsLink: "Términos de Uso", mustAccept: "Debes aceptar los Términos de Uso para registrarte.",
+    otpTitle: "Verifica tu correo", otpSub: "Te hemos enviado un código de 6 dígitos.", btnVerify: "Verificar Código",
     tabBuy: "Comprar", tabSell: "Vender",
     youSend: "Tú envías", youGet: "Tú recibes",
     walletBuy: "Tu dirección de Wallet destino:", walletSell: "Tu cuenta IBAN para recibir EUR:",
@@ -69,11 +70,8 @@ const dict = {
     pay: "Pagas", get: "Recibes", buyNow: "Comprar →", feeLabel: "Comisión:",
     p2pTitle: "También en Plataformas P2P", p2pSub: "¿Prefieres usar garantías? Opera con nuestras cuentas de comerciante verificado en los principales exchanges.",
     verified: "✓ Comerciante Verificado", tradeOn: "Operar en",
-    aboutTitle: "Sobre Barzcorp",
-    aboutIntro: "Barzcorp ofrece servicios de entrada y salida de fiat (fiat-cripto-fiat) para particulares y entidades legales en toda la zona SEPA en Europa. Los servicios se brindan a través de diferentes canales a elección del cliente:",
-    aboutP2pTitle: "Plataformas de Mercado P2P", aboutP2p: "Operamos en las principales plataformas (Binance, OKX, Bitget, Bybit, etc.). Este canal es ideal para particulares que buscan seguridad adicional a través del servicio de depósito en garantía (escrow).",
-    aboutRetailTitle: "Comercio Minorista Online", aboutRetail: "Servicio directo a través de nuestro sitio web hacia la billetera externa del cliente. Es un servicio rápido y confiable sin intermediarios.",
-    aboutOtcTitle: "Mesa OTC", aboutOtc: "Diseñado para satisfacer las necesidades de comerciantes e inversores de alto volumen. Brinda confianza, rapidez, confiabilidad y un trato personal, protegiendo contra el deslizamiento del mercado.",
+    aboutTitle: "Sobre Barzcorp", aboutIntro: "Barzcorp ofrece servicios de entrada y salida de fiat en toda la zona SEPA.",
+    termsTitle: "Términos de Uso", termsText: "Bienvenido a Barzcorp. Al usar nuestros servicios, aceptas cumplir con las normativas europeas AML. Los fondos deben provenir de una cuenta a tu nombre. Las transferencias de terceros serán devueltas descontando tarifas. No nos hacemos responsables por envíos a direcciones incorrectas provistas por el usuario.",
     howTitle: "Tres simples pasos",
     step1: "Crea tu cuenta", step1Sub: "Regístrate y verifica tu identidad.",
     step2: "Haz tu transferencia", step2Sub: "Envía los fondos mediante transferencia SEPA.",
@@ -87,13 +85,13 @@ const dict = {
 const faqs = {
   en: [
     { q: "How long does the verification (KYC) take?", a: "Our automated system verifies your documents in less than 5 minutes." },
-    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier, starting at 3.0% and dropping to 1.5% for larger amounts. Network fees are included." },
-    { q: "How fast will I receive my crypto/fiat?", a: "Once your SEPA transfer arrives, crypto is dispatched immediately. If you sell crypto, EUR is sent the same business day." }
+    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier. Rates start at 1.5% and drop to 0.5% for high volumes." },
+    { q: "How fast will I receive my crypto/fiat?", a: "Once your SEPA transfer arrives, crypto is dispatched immediately." }
   ],
   es: [
     { q: "¿Cuánto tarda la verificación (KYC)?", a: "Nuestro sistema automatizado verifica tus documentos en menos de 5 minutos." },
-    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente basada en tu volumen, comenzando en 3.0% y bajando al 1.5% para montos mayores. Las tarifas de red están incluidas." },
-    { q: "¿Qué tan rápido recibiré mi dinero/cripto?", a: "Una vez que llega tu transferencia SEPA, enviamos la cripto de inmediato. Si vendes cripto, los euros se envían el mismo día hábil." }
+    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente. Las tasas comienzan en 1.5% y bajan hasta el 0.5% para grandes volúmenes." },
+    { q: "¿Qué tan rápido recibiré mi dinero/cripto?", a: "Una vez que llega tu transferencia SEPA, enviamos la cripto de inmediato." }
   ]
 };
 
@@ -119,11 +117,14 @@ function App() {
   const [view, setView] = useState('home');
   const [session, setSession] = useState(null);
   
-  // Auth States
   const [mostrarLogin, setMostrarLogin] = useState(false);
   const [isSignUpView, setIsSignUpView] = useState(false);
-  const [isResetView, setIsResetView] = useState(false); // NUEVO ESTADO: VISTA DE RECUPERACIÓN
+  const [isResetView, setIsResetView] = useState(false); 
   const [authMsg, setAuthMsg] = useState('');
+  
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
   
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -131,7 +132,6 @@ function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Exchange States
   const [isBuying, setIsBuying] = useState(true);
   const [cryptoType, setCryptoType] = useState('USDT');
   const [wallet, setWallet] = useState('');
@@ -143,7 +143,7 @@ function App() {
 
   const [fiatInput, setFiatInput] = useState('100');
   const [cryptoInput, setCryptoInput] = useState('');
-  const [activeTier, setActiveTier] = useState('3.0%');
+  const [activeTier, setActiveTier] = useState('1.5%');
 
   const blockAmounts = [100, 250, 500, 1000, 1500];
 
@@ -172,10 +172,10 @@ function App() {
   }, [precioReal, isBuying]);
 
   const calcularTasas = (montoEuros) => {
-    let margen = 1.03; 
-    let porcentajeMostrar = "3.0%";
-    if (montoEuros >= 1500) { margen = 1.015; porcentajeMostrar = "1.5%"; } 
-    else if (montoEuros >= 500) { margen = 1.02; porcentajeMostrar = "2.0%"; }
+    let margen = 1.015; 
+    let porcentajeMostrar = "1.5%";
+    if (montoEuros >= 1500) { margen = 1.005; porcentajeMostrar = "0.5%"; } 
+    else if (montoEuros >= 500) { margen = 1.01; porcentajeMostrar = "1.0%"; }
     return { tasaCompra: precioReal * margen, tasaVenta: precioReal * (2 - margen), porcentajeMostrar };
   };
 
@@ -220,7 +220,7 @@ function App() {
 
     try {
       const response = await axios.post('https://barzcorp-api.onrender.com/nueva-orden', {
-        nombreCliente: `${session.user.user_metadata?.first_name || session.user.email} (Ref: #${refUnica}) - TIPO: ${isBuying ? 'COMPRA' : 'VENTA'}`,
+        nombreCliente: `${session.user.user_metadata?.first_name || session.user.email} (Ref: #${refUnica}) - TYPE: ${isBuying ? 'BUY' : 'SELL'}`,
         cantidad: isBuying ? cryptoInput : fiatInput,
         monedaCripto: cryptoType,
         montoFiat: isBuying ? fiatInput : cryptoInput,
@@ -232,23 +232,16 @@ function App() {
         setOrdenCreada(true);
       }
     } catch (error) {
-        setStatus('❌ Error');
+        setStatus('❌ Network Error');
     }
   };
 
-  // NUEVA FUNCIÓN: Recuperar Contraseña
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setAuthMsg(t.processing);
-    if (!email) {
-      setAuthMsg(`❌ ${t.fillAll}`);
-      return;
-    }
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: window.location.origin,
-    });
-    if (error) setAuthMsg(`❌ ${error.message}`);
-    else setAuthMsg(t.resetSuccess);
+    if (!email) return setAuthMsg(`❌ ${t.fillAll}`);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
+    if (error) setAuthMsg(`❌ ${error.message}`); else setAuthMsg(t.resetSuccess);
   };
 
   const handleAuth = async (e) => {
@@ -256,20 +249,41 @@ function App() {
     setAuthMsg(t.processing);
 
     if (isSignUpView) {
-      if (!firstName || !lastName || !email || !password) {
-        setAuthMsg(`❌ ${t.fillAll}`);
-        return;
-      }
+      if (!firstName || !lastName || !email || !password) return setAuthMsg(`❌ ${t.fillAll}`);
+      if (!acceptTerms) return setAuthMsg(`❌ ${t.mustAccept}`);
+
       const { error } = await supabase.auth.signUp({
         email, password,
         options: { data: { first_name: firstName, last_name: lastName, currency: currency } }
       });
-      if (error) setAuthMsg(`❌ ${error.message}`);
-      else setAuthMsg(`✅ ${t.checkEmail}`);
+      
+      if (error) {
+        setAuthMsg(`❌ ${error.message}`);
+      } else {
+        setAuthMsg('');
+        setShowOtpModal(true); 
+      }
     } else {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) setAuthMsg(`❌ ${error.message}`);
       else { setAuthMsg(''); setMostrarLogin(false); setIsResetView(false); }
+    }
+  };
+
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    setAuthMsg(t.processing);
+    const { error } = await supabase.auth.verifyOtp({
+      email,
+      token: otpCode,
+      type: 'signup'
+    });
+    if (error) {
+      setAuthMsg(`❌ ${error.message}`);
+    } else {
+      setAuthMsg('');
+      setShowOtpModal(false);
+      setMostrarLogin(false);
     }
   };
 
@@ -311,12 +325,8 @@ function App() {
       <div style={{ position: 'fixed', width: '100vw', height: '100vh', zIndex: 0, pointerEvents: 'none', top: 0, left: 0, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * 0.15}px)` }} />
         <div style={{ position: 'absolute', bottom: '10%', left: '-20%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(37,99,235,0.08) 0%, rgba(17,24,39,0) 70%)', filter: 'blur(60px)', transform: `translateY(${scrollY * -0.1}px)` }} />
-        
         <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '20%', width: '100%', transform: `translateY(${scrollY * -0.25}px)`, opacity: 0.05, transition: 'transform 0.1s ease-out' }}>
           <path fill="#10b981" d="M0,160L48,165.3C96,171,192,181,288,165.3C384,149,480,107,576,112C672,117,768,171,864,197.3C960,224,1056,224,1152,202.7C1248,181,1344,139,1392,117.3L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        </svg>
-        <svg viewBox="0 0 1440 320" style={{ position: 'absolute', top: '50%', width: '100%', transform: `translateY(${scrollY * -0.4}px)`, opacity: 0.03, transition: 'transform 0.1s ease-out' }}>
-          <path fill="#ffffff" d="M0,224L60,213.3C120,203,240,181,360,176C480,171,600,181,720,197.3C840,213,960,235,1080,218.7C1200,203,1320,149,1380,122.7L1440,96L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
         </svg>
       </div>
 
@@ -326,10 +336,10 @@ function App() {
         </div>
         
         <div style={{ display: 'flex', gap: '25px', fontWeight: '500', color: '#9ca3af' }}>
-          <span onClick={() => setView('home')} style={{cursor: 'pointer', color: view==='home'?'#10b981':'inherit', transition: '0.2s'}}>{t.navHome}</span>
-          <span onClick={() => setView('about')} style={{cursor: 'pointer', color: view==='about'?'#10b981':'inherit', transition: '0.2s'}}>{t.navAbout}</span>
-          <span onClick={() => setView('faq')} style={{cursor: 'pointer', color: view==='faq'?'#10b981':'inherit', transition: '0.2s'}}>{t.navFaq}</span>
-          <span onClick={() => setView('contact')} style={{cursor: 'pointer', color: view==='contact'?'#10b981':'inherit', transition: '0.2s'}}>{t.navContact}</span>
+          <span onClick={() => setView('home')} style={{cursor: 'pointer', color: view==='home'?'#10b981':'inherit'}}>{t.navHome}</span>
+          <span onClick={() => setView('about')} style={{cursor: 'pointer', color: view==='about'?'#10b981':'inherit'}}>{t.navAbout}</span>
+          <span onClick={() => setView('faq')} style={{cursor: 'pointer', color: view==='faq'?'#10b981':'inherit'}}>{t.navFaq}</span>
+          <span onClick={() => setView('contact')} style={{cursor: 'pointer', color: view==='contact'?'#10b981':'inherit'}}>{t.navContact}</span>
         </div>
 
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -346,13 +356,22 @@ function App() {
               <button onClick={() => supabase.auth.signOut()} style={{ padding: '8px 16px', backgroundColor: '#ef4444', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnLogout}</button>
             </div>
           ) : (
-            <button onClick={() => {setView('home'); setIsSignUpView(false); setIsResetView(false); setMostrarLogin(true);}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 4px 15px rgba(16,185,129,0.2)' }}>{t.btnSignIn}</button>
+            <button onClick={() => {setView('home'); setIsSignUpView(false); setIsResetView(false); setMostrarLogin(true);}} style={{ padding: '8px 16px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>{t.btnSignIn}</button>
           )}
         </div>
       </nav>
 
       <div style={{ flex: 1, position: 'relative', zIndex: 10 }}>
         
+        {view === 'terms' && (
+          <div style={{ padding: '80px 5%', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
+            <h1 style={{ fontSize: '40px', fontWeight: '900', marginBottom: '40px', color: '#ffffff', textAlign: 'center' }}>{t.termsTitle}</h1>
+            <div style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '30px', borderRadius: '16px', color: '#d1d5db', lineHeight: '1.8' }}>
+              {t.termsText}
+            </div>
+          </div>
+        )}
+
         {view === 'faq' && (
           <div style={{ padding: '80px 5%', maxWidth: '800px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
             <h1 style={{ fontSize: '40px', fontWeight: '900', marginBottom: '40px', color: '#ffffff', textAlign: 'center' }}>{t.faqTitle}</h1>
@@ -372,31 +391,35 @@ function App() {
             <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '20px', color: '#ffffff', textAlign: 'center' }}>{t.aboutTitle}</h1>
             <p style={{ fontSize: '18px', color: '#9ca3af', lineHeight: '1.7', marginBottom: '50px', textAlign: 'center' }}>{t.aboutIntro}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
-                <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutP2pTitle}</h3>
-                <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutP2p}</p>
-              </div>
-              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
                 <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutRetailTitle}</h3>
                 <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutRetail}</p>
-              </div>
-              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
-                <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutOtcTitle}</h3>
-                <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutOtc}</p>
               </div>
             </div>
           </div>
         )}
 
-        {view === 'contact' && (
-          <div style={{ padding: '80px 5%', maxWidth: '500px', margin: '0 auto', animation: 'fadeIn 0.3s' }}>
-            <h1 style={{ fontSize: '32px', fontWeight: '900', marginBottom: '30px', textAlign: 'center', color: '#ffffff' }}>{t.contactTitle}</h1>
-            <form onSubmit={(e) => { e.preventDefault(); alert(lang==='en'?'Message sent!':'¡Mensaje enviado!'); }}>
-              <input type="text" placeholder={t.name} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
-              <input type="email" placeholder={t.email} style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required />
-              <textarea placeholder={t.msg} rows="5" style={{ width: '100%', padding: '15px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: 'rgba(31, 41, 55, 0.8)', color: '#ffffff' }} required></textarea>
-              <button type="submit" style={{ width: '100%', padding: '15px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', fontWeight: 'bold', cursor: 'pointer' }}>{t.btnSend}</button>
-            </form>
+        {showOtpModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', backgroundColor: 'rgba(0,0,0,0.8)', zIndex: 999, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ backgroundColor: '#ffffff', padding: '40px', borderRadius: '16px', width: '100%', maxWidth: '400px', textAlign: 'center', boxShadow: '0 25px 50px rgba(0,0,0,0.5)' }}>
+              <h2 style={{ color: '#111827', margin: '0 0 10px 0', fontSize: '28px' }}>{t.otpTitle}</h2>
+              <p style={{ color: '#475569', marginBottom: '30px' }}>{t.otpSub}</p>
+              <form onSubmit={handleVerifyOtp}>
+                <input 
+                  type="text" 
+                  maxLength="6" 
+                  value={otpCode} 
+                  onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                  style={{ width: '80%', letterSpacing: '10px', textAlign: 'center', fontSize: '32px', padding: '15px', borderRadius: '12px', border: '2px solid #cbd5e1', marginBottom: '25px', backgroundColor: '#f8fafc', color: '#0f172a', fontWeight: 'bold', outline: 'none' }} 
+                  placeholder="------"
+                  required 
+                />
+                <button type="submit" style={{ width: '100%', padding: '16px', backgroundColor: '#2563eb', color: '#ffffff', border: 'none', borderRadius: '12px', fontSize: '18px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 6px rgba(37,99,235,0.2)' }}>
+                  {t.btnVerify}
+                </button>
+              </form>
+              {authMsg && <p style={{ marginTop: '15px', color: '#ef4444', fontWeight: 'bold' }}>{authMsg}</p>}
+            </div>
           </div>
         )}
 
@@ -414,14 +437,11 @@ function App() {
                 </div>
               </div>
 
-              {/* CALCULADORA / FORMULARIOS DE AUTENTICACIÓN */}
               <div style={{ flex: '1 1 400px', display: 'flex', justifyContent: 'center' }}>
                 <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(20px)', padding: '40px', borderRadius: '24px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', width: '100%', maxWidth: '420px' }}>
                   
                   {mostrarLogin && !session ? (
                     <div style={{ animation: 'fadeIn 0.3s' }}>
-                      
-                      {/* VISTA DE RECUPERACIÓN DE CONTRASEÑA */}
                       {isResetView ? (
                          <div style={{ animation: 'fadeIn 0.3s' }}>
                            <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{t.resetTitle}</h3>
@@ -435,7 +455,6 @@ function App() {
                            </div>
                          </div>
                       ) : (
-                        /* VISTA NORMAL DE LOGIN / REGISTRO */
                         <>
                           <h3 style={{ textAlign: 'center', fontSize: '24px', marginBottom: '5px', color: '#ffffff' }}>{isSignUpView ? t.regTitle : t.loginTitle}</h3>
                           <p style={{textAlign: 'center', color: '#9ca3af', fontSize: '14px', marginBottom: '20px'}}>{isSignUpView ? t.regSub : t.loginSub}</p>
@@ -452,13 +471,19 @@ function App() {
                             <input type="password" placeholder={t.pass} value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '14px', marginBottom: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff' }} required />
                             
                             {isSignUpView && (
-                              <div style={{ marginBottom: '20px' }}>
-                                <label style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px', display: 'block' }}>{t.currencyLabel}</label>
-                                <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', outline: 'none' }}>
-                                  <option value="EUR">EUR (€)</option>
-                                  <option value="USD">USD ($)</option>
-                                </select>
-                              </div>
+                              <>
+                                <div style={{ marginBottom: '15px' }}>
+                                  <label style={{ fontSize: '12px', color: '#9ca3af', marginBottom: '5px', display: 'block' }}>{t.currencyLabel}</label>
+                                  <select value={currency} onChange={(e) => setCurrency(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', outline: 'none' }}>
+                                    <option value="EUR">EUR (€)</option>
+                                    <option value="USD">USD ($)</option>
+                                  </select>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', fontSize: '13px', color: '#d1d5db' }}>
+                                  <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} style={{ marginRight: '10px', width: '16px', height: '16px' }} />
+                                  <label>{t.agreeTerms} <span onClick={() => {setView('terms'); setMostrarLogin(false);}} style={{ color: '#10b981', cursor: 'pointer', textDecoration: 'underline' }}>{t.termsLink}</span></label>
+                                </div>
+                              </>
                             )}
 
                             <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
@@ -481,15 +506,14 @@ function App() {
                           </div>
                         </>
                       )}
-                      
                       {authMsg && <p style={{ marginTop: '15px', fontSize: '13px', textAlign: 'center', color: authMsg.includes('❌') ? '#ef4444' : '#10b981' }}>{authMsg}</p>}
                     </div>
                   ) : !ordenCreada ? (
                     <div style={{ animation: 'fadeIn 0.3s', position: 'relative' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
                         <div style={{ backgroundColor: '#111827', padding: '5px', borderRadius: '20px', display: 'flex', gap: '5px' }}>
-                           <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: isBuying ? '#ffffff' : '#9ca3af', transition: '0.2s' }}>{t.tabBuy}</div>
-                           <div onClick={() => setIsBuying(false)} style={{ padding: '8px 20px', backgroundColor: !isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: !isBuying ? '#ffffff' : '#9ca3af', transition: '0.2s' }}>{t.tabSell}</div>
+                           <div onClick={() => setIsBuying(true)} style={{ padding: '8px 20px', backgroundColor: isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: isBuying ? '#ffffff' : '#9ca3af' }}>{t.tabBuy}</div>
+                           <div onClick={() => setIsBuying(false)} style={{ padding: '8px 20px', backgroundColor: !isBuying ? '#374151' : 'transparent', borderRadius: '15px', fontWeight: 'bold', cursor: 'pointer', color: !isBuying ? '#ffffff' : '#9ca3af' }}>{t.tabSell}</div>
                         </div>
                       </div>
 
@@ -543,7 +567,7 @@ function App() {
                           <input type="text" value={wallet} onChange={(e) => setWallet(e.target.value)} placeholder="..." style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #374151', backgroundColor: '#111827', color: '#ffffff', boxSizing: 'border-box' }} required />
                         </div>
 
-                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting') || !fiatInput} style={{ width: '100%', padding: '18px', backgroundColor: (!fiatInput || cargandoPrecio) ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: (!fiatInput || cargandoPrecio) ? 'not-allowed' : 'pointer', boxShadow: '0 10px 15px -3px rgba(16,185,129,0.3)' }}>
+                        <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting') || !fiatInput} style={{ width: '100%', padding: '18px', backgroundColor: (!fiatInput || cargandoPrecio) ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: (!fiatInput || cargandoPrecio) ? 'not-allowed' : 'pointer' }}>
                           {status ? status : (isBuying ? `${t.btnBuy} ${cryptoType}` : `${t.btnSell} ${cryptoType}`)}
                         </button>
                       </form>
@@ -561,7 +585,7 @@ function App() {
                           <>
                             <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#9ca3af' }}>{t.bank} <strong style={{ color: '#ffffff', float: 'right' }}>ING</strong></p>
                             <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#9ca3af' }}>{t.beneficiary} <strong style={{ color: '#ffffff', float: 'right' }}>Barzcorp</strong></p>
-                            <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#9ca3af' }}>IBAN: <strong style={{ color: '#ffffff', float: 'right' }}>NLXX INGB 0000 0000 00</strong></p>
+                            <p style={{ margin: '0 0 10px 0', fontSize: '14px', color: '#9ca3af' }}>IBAN: <strong style={{ color: '#ffffff', float: 'right' }}>NL78 INGB 0112 0149 92</strong></p>
                           </>
                         ) : (
                           <>
@@ -581,21 +605,14 @@ function App() {
               </div>
             </header>
 
-            {/* SECCIÓN: BUY BLOCKS */}
             <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
                <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px' }}>{t.buyBlocksTitle}</h2>
                <p style={{ color: '#9ca3af', marginBottom: '40px' }}>{t.buyBlocksSub}</p>
-               
                <div style={{ display: 'flex', gap: '20px', overflowX: 'auto', paddingBottom: '20px' }}>
                   {blockAmounts.map((amount, index) => {
                     const blockRates = calcularTasas(amount);
                     return (
-                      <div key={index} onClick={() => selectBlock(amount)} style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative', cursor: 'pointer', transition: 'transform 0.2s' }}>
-                         {amount >= 500 && (
-                           <div style={{ position: 'absolute', top: '15px', right: '15px', backgroundColor: 'rgba(16,185,129,0.2)', color: '#10b981', padding: '2px 8px', borderRadius: '12px', fontSize: '10px', fontWeight: 'bold', border: '1px solid rgba(16,185,129,0.5)' }}>
-                             MEJOR TASA
-                           </div>
-                         )}
+                      <div key={index} onClick={() => selectBlock(amount)} style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', borderRadius: '16px', padding: '25px', minWidth: '200px', flex: '1', position: 'relative', cursor: 'pointer' }}>
                          <div style={{ backgroundColor: '#10b981', color: '#064e3b', width: '30px', height: '30px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', marginBottom: '20px' }}>{index + 1}</div>
                          <p style={{ color: '#9ca3af', fontSize: '14px', marginBottom: '5px' }}>{t.pay}</p>
                          <p style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff', marginBottom: '20px' }}>{amount} <span style={{fontSize:'16px', color:'#9ca3af'}}>EUR</span></p>
@@ -607,48 +624,6 @@ function App() {
                   })}
                </div>
             </section>
-
-            {/* SECCIÓN P2P */}
-            <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
-              <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px', textAlign: 'center' }}>{t.p2pTitle}</h2>
-              <p style={{ color: '#9ca3af', marginBottom: '40px', textAlign: 'center' }}>{t.p2pSub}</p>
-
-              <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <a href="https://www.bitget.com/p2p-trade/personal?shareCode=BG3NN9E3LL6QR&qrAction=adCommand" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                    <div style={{ width: '45px', height: '45px', backgroundColor: '#00E4C6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🐰</div>
-                    <div style={{ textAlign: 'left' }}>
-                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
-                       <div style={{ color: '#00E4C6', fontSize: '13px', fontWeight: '600' }}>Bitget P2P</div>
-                    </div>
-                  </div>
-                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
-                  <button style={{ width: '100%', backgroundColor: '#00E4C6', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} Bitget →</button>
-                </a>
-                <a href="https://www.okx.com/p2p/ads-merchant?publicUserId=120955232a" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                    <div style={{ width: '45px', height: '45px', backgroundColor: '#ffffff', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🛡️</div>
-                    <div style={{ textAlign: 'left' }}>
-                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
-                       <div style={{ color: '#ffffff', fontSize: '13px', fontWeight: '600' }}>OKX P2P</div>
-                    </div>
-                  </div>
-                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
-                  <button style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} OKX →</button>
-                </a>
-                <a href="https://s.mexc.com/p2p_event/UuZCNVgh" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
-                    <div style={{ width: '45px', height: '45px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>⚡</div>
-                    <div style={{ textAlign: 'left' }}>
-                       <div style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '18px' }}>Barzcorp</div>
-                       <div style={{ color: '#3b82f6', fontSize: '13px', fontWeight: '600' }}>MEXC P2P</div>
-                    </div>
-                  </div>
-                  <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
-                  <button style={{ width: '100%', backgroundColor: '#2563eb', color: '#ffffff', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} MEXC →</button>
-                </a>
-              </div>
-            </section>
           </>
         )}
       </div>
@@ -656,6 +631,9 @@ function App() {
       <footer style={{ backgroundColor: '#111827', color: '#6b7280', padding: '40px 5%', textAlign: 'center', fontSize: '14px', borderTop: '1px solid #1f2937', position: 'relative', zIndex: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>
           <BarzcorpLogo /> BARZCORP
+        </div>
+        <div style={{ marginBottom: '15px' }}>
+          <span onClick={() => {setView('terms'); window.scrollTo(0,0);}} style={{ cursor: 'pointer', margin: '0 10px', textDecoration: 'underline' }}>{t.termsLink}</span>
         </div>
         <p>Copyright © 2026 Barzcorp Exchange. {t.footerRight}</p>
       </footer>
