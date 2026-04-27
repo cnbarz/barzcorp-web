@@ -41,6 +41,9 @@ const dict = {
     contactTitle: "Contact Support", name: "Your Name", msg: "Your Message", btnSend: "Send Message",
     faqTitle: "Frequently Asked Questions",
     footerRight: "Netherlands.",
+    trustedBy: "Technology & Infrastructure trusted by:",
+    ssl: "256-bit SSL Secure Transaction",
+    legalFooter: "Barzcorp is a virtual asset service provider registered with the Netherlands Chamber of Commerce (KVK) under number 96800968. We operate in strict compliance with the European Union's AML5 directives to ensure the highest standards of financial security.",
   },
   es: {
     navHome: "Inicio", navHow: "Cómo funciona", navAbout: "Sobre Nosotros", navContact: "Contacto", navFaq: "FAQ",
@@ -79,19 +82,28 @@ const dict = {
     contactTitle: "Contactar Soporte", name: "Tu Nombre", msg: "Tu Mensaje", btnSend: "Enviar Mensaje",
     faqTitle: "Preguntas Frecuentes",
     footerRight: "Países Bajos.",
+    trustedBy: "Tecnología e Infraestructura respaldada por:",
+    ssl: "Transacción Segura SSL 256-bit",
+    legalFooter: "Barzcorp es un proveedor de servicios de activos virtuales registrado en la Cámara de Comercio de los Países Bajos (KVK) con el número 96800968. Operamos en estricto cumplimiento de las directivas AML5 de la Unión Europea para garantizar los más altos estándares de seguridad financiera.",
   }
 };
 
 const faqs = {
   en: [
-    { q: "How long does the verification (KYC) take?", a: "Our automated system verifies your documents in less than 5 minutes." },
-    { q: "What are the fees?", a: "We charge a transparent fee based on your volume tier. Rates start at 7.0% and drop to 5.0% for high volumes." },
-    { q: "How fast will I receive my crypto/fiat?", a: "Once your SEPA transfer arrives, crypto is dispatched immediately." }
+    { q: "How long does the identity verification (KYC) take?", a: "Our automated system verifies your documents in under 5 minutes using bank-grade security technology." },
+    { q: "What are the transaction limits?", a: "For standard verified accounts, the limit is €10,000 per month. If you require higher volume limits, please contact our OTC desk for tailored solutions." },
+    { q: "Can I pay from a friend's or family member's bank account?", a: "No. To strictly comply with European Anti-Money Laundering (AML) regulations, the name on the originating bank account must exactly match the name registered on your Barzcorp account. Third-party transfers will be automatically rejected and refunded, minus processing fees." },
+    { q: "How fast will I receive my digital assets or fiat?", a: "Crypto purchases are dispatched immediately once your SEPA transfer clears into our account (usually 1-2 business days). Sell orders (Crypto to EUR) are processed and sent to your bank on the same business day." },
+    { q: "How are your fees structured?", a: "We believe in absolute transparency. Our rates are dynamically calculated based on your volume tier, starting at 7.0% and dropping to 5.0% for larger transactions. The price you see on the calculator includes all network and processing fees." },
+    { q: "Is my personal data secure?", a: "Yes. We utilize end-to-end encryption. For your safety, we do not store sensitive identity documents on our own servers; all verification is handled securely by certified third-party providers." }
   ],
   es: [
-    { q: "¿Cuánto tarda la verificación (KYC)?", a: "Nuestro sistema automatizado verifica tus documentos en menos de 5 minutos." },
-    { q: "¿Cuáles son las comisiones?", a: "Cobramos una tarifa transparente. Las tasas comienzan en 7.0% y bajan hasta el 5.0% para grandes volúmenes." },
-    { q: "¿Qué tan rápido recibiré mi dinero/cripto?", a: "Una vez que llega tu transferencia SEPA, enviamos la cripto de inmediato." }
+    { q: "¿Cuánto tarda la verificación de identidad (KYC)?", a: "Nuestro sistema automatizado verifica tus documentos en menos de 5 minutos utilizando tecnología de seguridad de grado bancario." },
+    { q: "¿Cuáles son los límites de transacción?", a: "Para cuentas verificadas estándar, el límite es de 10.000 € al mes. Si requieres límites mayores, contacta a nuestra mesa OTC para soluciones personalizadas." },
+    { q: "¿Puedo pagar desde la cuenta bancaria de un amigo o familiar?", a: "No. Para cumplir estrictamente con las normativas europeas contra el lavado de dinero (AML), el nombre en la cuenta bancaria de origen debe coincidir exactamente con tu cuenta en Barzcorp. Las transferencias de terceros serán rechazadas y devueltas." },
+    { q: "¿Qué tan rápido recibiré mis activos o mi dinero?", a: "Las criptomonedas se envían inmediatamente tras recibir tu transferencia SEPA (generalmente 1-2 días hábiles). Las órdenes de venta se procesan y envían a tu banco el mismo día hábil." },
+    { q: "¿Cómo se estructuran sus comisiones?", a: "Creemos en la transparencia absoluta. Nuestras tasas se calculan dinámicamente según tu volumen, comenzando en 7.0% y bajando hasta 5.0% para transacciones grandes. El precio de la calculadora incluye todas las tarifas de red." },
+    { q: "¿Están seguros mis datos personales?", a: "Sí. Utilizamos encriptación de extremo a extremo. Por tu seguridad, no almacenamos documentos de identidad en nuestros servidores; toda la verificación es manejada por proveedores externos certificados." }
   ]
 };
 
@@ -171,12 +183,11 @@ function App() {
     if (!cargandoPrecio) handleFiatChange(fiatInput);
   }, [precioReal, isBuying]);
 
-  // === NUEVA MATEMÁTICA DE MÁRGENES: BASE 7.0% ===
   const calcularTasas = (montoEuros) => {
-    let margen = 1.07; // 7.0% Ganancia Base
+    let margen = 1.07; 
     let porcentajeMostrar = "7.0%";
-    if (montoEuros >= 1500) { margen = 1.05; porcentajeMostrar = "5.0%"; } // VIP
-    else if (montoEuros >= 500) { margen = 1.06; porcentajeMostrar = "6.0%"; } // Medio
+    if (montoEuros >= 1500) { margen = 1.05; porcentajeMostrar = "5.0%"; } 
+    else if (montoEuros >= 500) { margen = 1.06; porcentajeMostrar = "6.0%"; } 
     return { tasaCompra: precioReal * margen, tasaVenta: precioReal * (2 - margen), porcentajeMostrar };
   };
 
@@ -379,8 +390,8 @@ function App() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
               {faqs[lang].map((faq, index) => (
                 <div key={index} style={{ backgroundColor: '#1f2937', border: '1px solid #374151', padding: '25px', borderRadius: '16px' }}>
-                  <h3 style={{ color: '#10b981', fontSize: '18px', marginBottom: '10px' }}>Q: {faq.q}</h3>
-                  <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>A: {faq.a}</p>
+                  <h3 style={{ color: '#10b981', fontSize: '18px', marginBottom: '10px' }}>{faq.q}</h3>
+                  <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{faq.a}</p>
                 </div>
               ))}
             </div>
@@ -502,9 +513,11 @@ function App() {
                             <button type="submit" style={{ width: '100%', padding: '14px', backgroundColor: '#10b981', color: '#064e3b', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginBottom: '15px' }}>
                               {isSignUpView ? t.btnRegister : t.btnEnter}
                             </button>
+                            
+                            <div style={{ textAlign: 'center', fontSize: '12px', color: '#10b981', marginTop: '10px' }}>🔒 {t.ssl}</div>
                           </form>
                           
-                          <div style={{ textAlign: 'center' }}>
+                          <div style={{ textAlign: 'center', marginTop: '20px' }}>
                             {!isSignUpView && (
                               <button onClick={() => setIsResetView(true)} style={{ background: 'none', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '13px', marginBottom: '15px', textDecoration: 'underline' }}>
                                 {t.forgotPass}
@@ -583,6 +596,10 @@ function App() {
                         <button type="submit" disabled={cargandoPrecio || status.includes('Procesando') || status.includes('Connecting') || !fiatInput} style={{ width: '100%', padding: '18px', backgroundColor: (!fiatInput || cargandoPrecio) ? '#374151' : '#10b981', color: '#064e3b', border: 'none', borderRadius: '16px', fontSize: '18px', fontWeight: 'bold', cursor: (!fiatInput || cargandoPrecio) ? 'not-allowed' : 'pointer' }}>
                           {status ? status : (isBuying ? `${t.btnBuy} ${cryptoType}` : `${t.btnSell} ${cryptoType}`)}
                         </button>
+                        
+                        <div style={{ textAlign: 'center', fontSize: '12px', color: '#10b981', marginTop: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                          🔒 {t.ssl}
+                        </div>
                       </form>
                     </div>
                   ) : (
@@ -617,6 +634,17 @@ function App() {
                 </div>
               </div>
             </header>
+
+            {/* NUEVA SECCIÓN: PARTNERS (SOCIAL PROOF) */}
+            <div style={{ padding: '25px 5%', borderTop: '1px solid #1f2937', borderBottom: '1px solid #1f2937', backgroundColor: '#111827', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '40px', color: '#6b7280' }}>
+                <span style={{ fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>{t.trustedBy}</span>
+                <div style={{ display: 'flex', gap: '30px', alignItems: 'center', fontWeight: 'bold', fontSize: '20px', filter: 'grayscale(100%)', opacity: 0.6, flexWrap: 'wrap', justifyContent: 'center' }}>
+                   <span>🛡️ Sumsub</span>
+                   <span>🦎 CoinGecko</span>
+                   <span>💶 SEPA Network</span>
+                   <span>⚡ Supabase</span>
+                </div>
+            </div>
 
             <section style={{ padding: '60px 5%', maxWidth: '1200px', margin: '0 auto' }}>
                <h2 style={{ fontSize: '32px', fontWeight: '900', color: '#ffffff', marginBottom: '10px' }}>{t.buyBlocksTitle}</h2>
@@ -682,14 +710,22 @@ function App() {
         )}
       </div>
 
-      <footer style={{ backgroundColor: '#111827', color: '#6b7280', padding: '40px 5%', textAlign: 'center', fontSize: '14px', borderTop: '1px solid #1f2937', position: 'relative', zIndex: 10 }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', fontSize: '20px', fontWeight: '900', color: '#ffffff' }}>
+      <footer style={{ backgroundColor: '#0f172a', color: '#6b7280', padding: '60px 5% 40px', textAlign: 'center', fontSize: '14px', borderTop: '1px solid #1f2937', position: 'relative', zIndex: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '20px', fontSize: '24px', fontWeight: '900', color: '#ffffff' }}>
           <BarzcorpLogo /> BARZCORP
         </div>
-        <div style={{ marginBottom: '15px' }}>
-          <span onClick={() => {setView('terms'); window.scrollTo(0,0);}} style={{ cursor: 'pointer', margin: '0 10px', textDecoration: 'underline' }}>{t.termsLink}</span>
+        
+        {/* TEXTO LEGAL KVK Y AML5 */}
+        <p style={{ maxWidth: '800px', margin: '0 auto 25px', color: '#4b5563', lineHeight: '1.6', fontSize: '12px' }}>
+          {t.legalFooter}
+        </p>
+
+        <div style={{ marginBottom: '20px' }}>
+          <span onClick={() => {setView('terms'); window.scrollTo(0,0);}} style={{ cursor: 'pointer', margin: '0 10px', textDecoration: 'underline', color: '#9ca3af' }}>{t.termsLink}</span>
+          <span style={{ margin: '0 10px', color: '#4b5563' }}>|</span>
+          <span onClick={() => {setView('faq'); window.scrollTo(0,0);}} style={{ cursor: 'pointer', margin: '0 10px', textDecoration: 'underline', color: '#9ca3af' }}>{t.navFaq}</span>
         </div>
-        <p>Copyright © 2026 Barzcorp Exchange. {t.footerRight}</p>
+        <p style={{ color: '#4b5563' }}>Copyright © 2026 Barzcorp Exchange. {t.footerRight}</p>
       </footer>
     </div>
   );
