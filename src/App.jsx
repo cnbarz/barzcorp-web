@@ -32,7 +32,17 @@ const dict = {
     pay: "Pay", get: "Get", buyNow: "Buy now →", feeLabel: "Fee applied:",
     p2pTitle: "Also available on P2P Platforms", p2pSub: "Prefer using escrow? Trade with our verified merchant accounts on major exchanges.",
     verified: "✓ Verified Merchant", tradeOn: "Trade on",
-    aboutTitle: "About Barzcorp", aboutIntro: "Barzcorp offers fiat on-ramp and off-ramp services across the SEPA zone.",
+    // NUEVO ABOUT US
+    aboutTitle: "About Barzcorp", 
+    aboutIntro: "Barzcorp is a premier European digital asset service provider. With years of deep experience operating as verified merchants on top-tier platforms, we bring our expertise directly to you. We offer a seamless, secure, and highly liquid bridge between traditional finance and the crypto ecosystem across the entire SEPA zone.",
+    stat1Num: "10K+", stat1Text: "Completed Transactions",
+    stat2Num: "99.9%", stat2Text: "Completion Rate",
+    stat3Num: "15+", stat3Text: "Supported SEPA Countries",
+    stat4Num: "24/7", stat4Text: "Customer Support",
+    aboutP2PExp: "Proven P2P Experience",
+    aboutP2PExpText: "Our background stems from high-volume operations on the world's largest exchanges. As verified merchants on Binance, OKX, Bitget, and MEXC, we have facilitated thousands of successful trades, building an impeccable reputation for speed, reliability, and absolute compliance.",
+    aboutRetailTitle: "Direct Online Retail", aboutRetailText: "By cutting out the intermediaries of traditional P2P platforms, our direct online retail portal allows you to on-ramp and off-ramp your fiat directly to and from your personal wallet, securing the best rates and fastest delivery times.",
+    // ===
     termsTitle: "Terms of Use", termsText: "Welcome to Barzcorp. By using our services to buy or sell digital assets, you agree to comply with European AML directives. Funds must come from an account in your own name. Third-party transfers will be refunded minus processing fees. We are not responsible for funds sent to incorrect wallet addresses.",
     howTitle: "Three simple steps",
     step1: "Create account", step1Sub: "Register and verify your identity.",
@@ -73,7 +83,17 @@ const dict = {
     pay: "Pagas", get: "Recibes", buyNow: "Comprar →", feeLabel: "Comisión:",
     p2pTitle: "También en Plataformas P2P", p2pSub: "¿Prefieres usar garantías? Opera con nuestras cuentas de comerciante verificado en los principales exchanges.",
     verified: "✓ Comerciante Verificado", tradeOn: "Operar en",
-    aboutTitle: "Sobre Barzcorp", aboutIntro: "Barzcorp ofrece servicios de entrada y salida de fiat en toda la zona SEPA.",
+    // NUEVO ABOUT US
+    aboutTitle: "Sobre Barzcorp", 
+    aboutIntro: "Barzcorp es un proveedor europeo de servicios de activos digitales de primer nivel. Con años de experiencia operando como comerciantes verificados en las principales plataformas, traemos nuestra experiencia directamente a ti. Ofrecemos un puente fluido, seguro y de alta liquidez entre las finanzas tradicionales y el ecosistema cripto en toda la zona SEPA.",
+    stat1Num: "10K+", stat1Text: "Transacciones Completadas",
+    stat2Num: "99.9%", stat2Text: "Tasa de Éxito",
+    stat3Num: "15+", stat3Text: "Países SEPA Activos",
+    stat4Num: "24/7", stat4Text: "Soporte al Cliente",
+    aboutP2PExp: "Experiencia P2P Comprobada",
+    aboutP2PExpText: "Nuestra trayectoria proviene de operaciones de alto volumen en los exchanges más grandes del mundo. Como comerciantes verificados en Binance, OKX, Bitget y MEXC, hemos facilitado miles de operaciones exitosas, construyendo una reputación impecable de velocidad, confiabilidad y cumplimiento absoluto.",
+    aboutRetailTitle: "Comercio Directo Minorista", aboutRetailText: "Al eliminar a los intermediarios de las plataformas P2P tradicionales, nuestro portal directo te permite comprar y vender usando tu billetera personal, asegurando las mejores tasas de cambio y los tiempos de entrega más rápidos del mercado.",
+    // ===
     termsTitle: "Términos de Uso", termsText: "Bienvenido a Barzcorp. Al usar nuestros servicios, aceptas cumplir con las normativas europeas AML. Los fondos deben provenir de una cuenta a tu nombre. Las transferencias de terceros serán devueltas descontando tarifas. No nos hacemos responsables por envíos a direcciones incorrectas provistas por el usuario.",
     howTitle: "Tres simples pasos",
     step1: "Crea tu cuenta", step1Sub: "Regístrate y verifica tu identidad.",
@@ -398,14 +418,56 @@ function App() {
           </div>
         )}
 
+        {/* === NUEVO ABOUT US CON MÉTRICAS Y EXPERIENCIA P2P === */}
         {view === 'about' && (
-          <div style={{ animation: 'fadeIn 0.4s', padding: '80px 5%', maxWidth: '900px', margin: '0 auto' }}>
+          <div style={{ animation: 'fadeIn 0.4s', padding: '80px 5%', maxWidth: '1000px', margin: '0 auto' }}>
             <h1 style={{ fontSize: '48px', fontWeight: '900', marginBottom: '20px', color: '#ffffff', textAlign: 'center' }}>{t.aboutTitle}</h1>
-            <p style={{ fontSize: '18px', color: '#9ca3af', lineHeight: '1.7', marginBottom: '50px', textAlign: 'center' }}>{t.aboutIntro}</p>
+            <p style={{ fontSize: '18px', color: '#9ca3af', lineHeight: '1.7', marginBottom: '50px', textAlign: 'center', maxWidth: '800px', margin: '0 auto 50px' }}>{t.aboutIntro}</p>
+            
+            {/* ROW DE ESTADÍSTICAS */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '50px' }}>
+               <div style={{ flex: '1 1 200px', backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '40px', fontWeight: '900', color: '#10b981', margin: '0 0 10px 0' }}>{t.stat1Num}</h2>
+                 <p style={{ color: '#d1d5db', margin: 0, fontWeight: 'bold' }}>{t.stat1Text}</p>
+               </div>
+               <div style={{ flex: '1 1 200px', backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '40px', fontWeight: '900', color: '#10b981', margin: '0 0 10px 0' }}>{t.stat2Num}</h2>
+                 <p style={{ color: '#d1d5db', margin: 0, fontWeight: 'bold' }}>{t.stat2Text}</p>
+               </div>
+               <div style={{ flex: '1 1 200px', backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '40px', fontWeight: '900', color: '#10b981', margin: '0 0 10px 0' }}>{t.stat3Num}</h2>
+                 <p style={{ color: '#d1d5db', margin: 0, fontWeight: 'bold' }}>{t.stat3Text}</p>
+               </div>
+               <div style={{ flex: '1 1 200px', backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', borderRadius: '16px', padding: '30px', textAlign: 'center' }}>
+                 <h2 style={{ fontSize: '40px', fontWeight: '900', color: '#10b981', margin: '0 0 10px 0' }}>{t.stat4Num}</h2>
+                 <p style={{ color: '#d1d5db', margin: 0, fontWeight: 'bold' }}>{t.stat4Text}</p>
+               </div>
+            </div>
+
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', padding: '30px', borderRadius: '16px' }}>
-                <h3 style={{ color: '#10b981', fontSize: '22px', marginBottom: '10px' }}>{t.aboutRetailTitle}</h3>
-                <p style={{ color: '#d1d5db', lineHeight: '1.6' }}>{t.aboutRetail}</p>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', padding: '40px', borderRadius: '16px', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+                 <div style={{ flex: '1 1 300px' }}>
+                    <h3 style={{ color: '#10b981', fontSize: '28px', marginBottom: '15px' }}>{t.aboutP2PExp}</h3>
+                    <p style={{ color: '#d1d5db', lineHeight: '1.7', fontSize: '16px' }}>{t.aboutP2PExpText}</p>
+                    <div style={{ display: 'flex', gap: '15px', marginTop: '20px', flexWrap: 'wrap' }}>
+                       <span style={{ backgroundColor: '#111827', padding: '8px 15px', borderRadius: '8px', border: '1px solid #374151', color: '#f3f4f6', fontWeight: 'bold' }}>Binance</span>
+                       <span style={{ backgroundColor: '#111827', padding: '8px 15px', borderRadius: '8px', border: '1px solid #374151', color: '#f3f4f6', fontWeight: 'bold' }}>OKX</span>
+                       <span style={{ backgroundColor: '#111827', padding: '8px 15px', borderRadius: '8px', border: '1px solid #374151', color: '#f3f4f6', fontWeight: 'bold' }}>Bitget</span>
+                       <span style={{ backgroundColor: '#111827', padding: '8px 15px', borderRadius: '8px', border: '1px solid #374151', color: '#f3f4f6', fontWeight: 'bold' }}>MEXC</span>
+                    </div>
+                 </div>
+                 <div style={{ flex: '1 1 250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '100px' }}>
+                    🤝
+                 </div>
+              </div>
+              <div style={{ backgroundColor: 'rgba(31, 41, 55, 0.7)', border: '1px solid #374151', padding: '40px', borderRadius: '16px', display: 'flex', gap: '30px', alignItems: 'center', flexWrap: 'wrap' }}>
+                 <div style={{ flex: '1 1 250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '100px' }}>
+                    💶
+                 </div>
+                 <div style={{ flex: '1 1 300px' }}>
+                    <h3 style={{ color: '#10b981', fontSize: '28px', marginBottom: '15px' }}>{t.aboutRetailTitle}</h3>
+                    <p style={{ color: '#d1d5db', lineHeight: '1.7', fontSize: '16px' }}>{t.aboutRetailText}</p>
+                 </div>
               </div>
             </div>
           </div>
@@ -635,7 +697,7 @@ function App() {
               </div>
             </header>
 
-            {/* NUEVA SECCIÓN: PARTNERS (SOCIAL PROOF) */}
+            {/* SECCIÓN: PARTNERS (SOCIAL PROOF) */}
             <div style={{ padding: '25px 5%', borderTop: '1px solid #1f2937', borderBottom: '1px solid #1f2937', backgroundColor: '#111827', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '40px', color: '#6b7280' }}>
                 <span style={{ fontSize: '14px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>{t.trustedBy}</span>
                 <div style={{ display: 'flex', gap: '30px', alignItems: 'center', fontWeight: 'bold', fontSize: '20px', filter: 'grayscale(100%)', opacity: 0.6, flexWrap: 'wrap', justifyContent: 'center' }}>
@@ -671,7 +733,7 @@ function App() {
               <p style={{ color: '#9ca3af', marginBottom: '40px', textAlign: 'center' }}>{t.p2pSub}</p>
 
               <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center' }}>
-                <a href="https://www.bitget.com/p2p-trade/personal?shareCode=BG3NN9E3LL6QR&qrAction=adCommand" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                <a href="https://www.bitget.com/es/p2p-trade/user/bcb34b7486b63d51a397" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                     <div style={{ width: '45px', height: '45px', backgroundColor: '#00E4C6', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>🐰</div>
                     <div style={{ textAlign: 'left' }}>
@@ -693,7 +755,7 @@ function App() {
                   <div style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981', fontSize: '12px', padding: '4px 10px', borderRadius: '12px', alignSelf: 'flex-start', marginBottom: '20px', border: '1px solid rgba(16,185,129,0.3)' }}>{t.verified}</div>
                   <button style={{ width: '100%', backgroundColor: '#ffffff', color: '#111827', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: 'bold', cursor: 'pointer' }}>{t.tradeOn} OKX →</button>
                 </a>
-                <a href="https://s.mexc.com/p2p_event/UuZCNVgh" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
+                <a href="https://www.mexc.com/buy-crypto/merchant?id=3b2efc756e20479ebaa509a93f6dc694" target="_blank" rel="noreferrer" style={{ textDecoration: 'none', backgroundColor: 'rgba(31, 41, 55, 0.7)', backdropFilter: 'blur(10px)', padding: '25px', borderRadius: '20px', border: '1px solid #374151', minWidth: '280px', flex: '1', maxWidth: '350px', transition: 'transform 0.2s', display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '15px' }}>
                     <div style={{ width: '45px', height: '45px', backgroundColor: '#2563eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>⚡</div>
                     <div style={{ textAlign: 'left' }}>
@@ -715,7 +777,6 @@ function App() {
           <BarzcorpLogo /> BARZCORP
         </div>
         
-        {/* TEXTO LEGAL KVK Y AML5 */}
         <p style={{ maxWidth: '800px', margin: '0 auto 25px', color: '#4b5563', lineHeight: '1.6', fontSize: '12px' }}>
           {t.legalFooter}
         </p>
